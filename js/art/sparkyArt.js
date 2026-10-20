@@ -10,9 +10,9 @@ import { drawGrid } from './pixelArt.js';
 const HEAD = [
   '.........KKKKKK.........',
   '.......KKKKWWWWKK.......',
-  '..KKKKKWWWWWWWWWWKKKK...',
-  '.KWWWWKWWWWWWWWWWKWWWK..',
-  'KWWKKWKWWKKWKKWWWKWKWK..',
+  '..KKKKKWWWWWWWKKWKKKK...',
+  '.KWWKWKWWWWWWWWKWKWKWK..',
+  'KWKKWWKWWKKWKKWWWKWWKK..',
   'KWWWWKKWKWWKWWKWWKKKK...',
   '.KWWK.KWKWKKWKKWWWK.....',
   '..KK..KWKWKKWKKWWWWK....',
@@ -20,7 +20,7 @@ const HEAD = [
   '......KWWKKWKKWKKKWK....',
   '......KWWKWWWWWWKWWK....',
   '.......KWWKKKKKKWWK.....',
-  '........KWWFFWWWWK......',
+  '........KWWFFWWKWK......',
   '.........KKKKKKKK.......',
 ];
 
