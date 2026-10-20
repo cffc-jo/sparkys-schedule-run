@@ -37,7 +37,7 @@
     <label>Size <input id="size" type="number" min="12" max="96" value="48" style="width:4em"></label>
     <label>Colours <input id="colors" type="number" min="2" max="24" value="16" style="width:4em"></label>
     <label><input id="outline" type="checkbox" checked> Outline</label>
-    <label>Resample <select id="resample"><option value="area">area (keeps detail)</option><option value="nearest">nearest</option></select></label>
+    <label>Resample <select id="resample"><option value="area">area (keeps detail)</option><option value="nearest">nearest</option><option value="detail">detail (keeps thin lines)</option></select></label>
     <button id="regen" class="secondary">Regenerate</button>
     <button id="save" title="Writes straight into assets/logos/ (works with tools/serve.ps1)">Save to assets/logos/</button>
     <button id="dlall" class="secondary">Download all PNGs</button>
@@ -46,7 +46,7 @@
   <div class="grid" id="grid"></div>
 
   <script type="module">
-    import { pixelateLogo } from './pixelate-core.js';
+    import { pixelateLogo, OVERRIDES } from './pixelate-core.js';
     import { logoBox } from '../js/game/boxArt.js';
 
     const CODES = ['ATL','ATX','CHI','CIN','CLB','CLB_2','CLT','COL','DAL','DC','HOU','LAFC','LAG','MIA','MNUFC','MTL','NE','NSH','NYC','NYR','ORL','PHI','POR','RSL','SDFC','SEA','SJ','SKC','STL','TOR','VAN'];
@@ -126,7 +126,7 @@
         }
         found++;
         const size = code === 'CHI' ? 88 : opts.size;
-        const { image, palette } = pixelateLogo(toRgba(img), { ...opts, size });
+        const { image, palette } = pixelateLogo(toRgba(img), { ...opts, size, ...(OVERRIDES[code] || {}) });
         results.set(code, image);
         const small = document.createElement('small');
         small.textContent = `${img.naturalWidth}×${img.naturalHeight} → ${size}×${size}, ${palette.length} colours`;

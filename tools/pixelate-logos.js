@@ -5,14 +5,15 @@
 //   npm install            (once, installs sharp)
 //   npm run logos          (or: node tools/pixelate-logos.js)
 //
-// Options:  --size 48  --colors 16  --no-outline  --resample nearest
+// Options:  --size 48  --colors 16  --no-outline  --resample nearest|detail
+// Per-club tweaks (e.g. MIA uses 'detail' resampling) live in OVERRIDES in tools/pixelate-core.js.
 // Source naming: <CODE>@3x.png (e.g. NYC@3x.png, CLB_2@3x.png). Output: assets/logos/<CODE>.png
 // CHI (our crest) is also exported larger as assets/logos/CHI.png for the title and finish line.
 import { readdir, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { pixelateLogo, DEFAULTS } from './pixelate-core.js';
+import { pixelateLogo, DEFAULTS, OVERRIDES } from './pixelate-core.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const srcDir = path.join(root, 'assets', 'logos-source');
@@ -57,7 +58,7 @@ async function main() {
       const src = await readRgba(path.join(srcDir, f));
       const size = code === 'CHI' ? CREST_SIZE : opts.size;
       const colors = opts.colors;
-      const { image, palette } = pixelateLogo(src, { ...opts, size, colors });
+      const { image, palette } = pixelateLogo(src, { ...opts, size, colors, ...(OVERRIDES[code] || {}) });
       await writePng(image, path.join(outDir, `${code}.png`));
       console.log(`${code.padEnd(6)} ${src.width}x${src.height} -> ${size}x${size}, ${palette.length} colours`);
       ok++;

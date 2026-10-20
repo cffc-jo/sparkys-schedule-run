@@ -120,7 +120,9 @@ npm install
 npm run logos
 ```
 
-Options: `node tools/pixelate-logos.js --size 48 --colors 16 --no-outline --resample nearest`.
+Options: `node tools/pixelate-logos.js --size 48 --colors 16 --no-outline --resample nearest|detail`.
+
+**Per-club tweaks** go in `OVERRIDES` in `tools/pixelate-core.js` and are applied by both the script and the contact sheet. Inter Miami (`MIA`) uses `resample: 'detail'`: every pixel snaps to the logo's own colours first, then thin accent lines win over the badge's main fill, so fine pink line work on black survives at 48 px. Try `detail` on any logo whose inside looks muddy.
 
 ## Replacing the Sparky sprite sheet
 

@@ -168,13 +168,61 @@ function center(img, size) {
   return out;
 }
 
+// 'detail' resampling: snap every source pixel to the palette first, then let each output pixel
+// be won by votes, with the logo's most common colour (usually its background fill) counting
+// less. Thin accent lines (e.g. a pink outline on a black badge) survive as clean 1px lines
+// instead of being averaged away. `dominantWeight` < 1 = thin lines win more easily.
+export function downscaleDetail(img, n, palette, alphaCutoff, dominantWeight = 0.45) {
+  const out = makeImage(n, n);
+  const s = img.width;
+  const scale = s / n;
+  const idx = new Int16Array(s * s).fill(-1);
+  for (let p = 0; p < s * s; p++) {
+    const i = p * 4;
+    if (img.data[i + 3] < alphaCutoff) continue;
+    const c = nearest(palette, img.data[i], img.data[i + 1], img.data[i + 2]);
+    idx[p] = palette.indexOf(c);
+  }
+  const votes = new Float32Array(palette.length);
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      votes.fill(0);
+      let clear = 0, total = 0;
+      const sx0 = Math.floor(x * scale), sx1 = Math.max(sx0 + 1, Math.floor((x + 1) * scale));
+      const sy0 = Math.floor(y * scale), sy1 = Math.max(sy0 + 1, Math.floor((y + 1) * scale));
+      for (let yy = sy0; yy < sy1; yy++) {
+        for (let xx = sx0; xx < sx1; xx++) {
+          const k = idx[yy * s + xx];
+          total++;
+          if (k < 0) clear++;
+          else votes[k] += k === 0 ? dominantWeight : 1; // palette[0] = the logo's most-used colour
+        }
+      }
+      if (clear > total / 2) continue;
+      let best = 0;
+      for (let k = 1; k < palette.length; k++) if (votes[k] > votes[best]) best = k;
+      const o = (y * n + x) * 4;
+      out.data[o] = palette[best][0]; out.data[o + 1] = palette[best][1]; out.data[o + 2] = palette[best][2]; out.data[o + 3] = 255;
+    }
+  }
+  return out;
+}
+
+// Per-club tweaks for logos that need extra help at small sizes. Used by both the Node script
+// and the contact sheet.
+export const OVERRIDES = {
+  MIA: { resample: 'detail' }, // thin pink line work on a black badge
+};
+
 export function pixelateLogo(src, options = {}) {
   const o = { ...DEFAULTS, ...options };
   const inner = o.outline ? o.size - 2 : o.size; // leave room for the outline inside `size`
   const square = squarePad(trim(src));
-  const small = downscale(square, inner, o.resample);
   const palette = buildPalette(square, o.colors, o.alphaCutoff);
-  let out = center(quantize(small, palette, o.alphaCutoff), o.size);
+  const pixels = o.resample === 'detail'
+    ? downscaleDetail(square, inner, palette, o.alphaCutoff, o.dominantWeight)
+    : quantize(downscale(square, inner, o.resample), palette, o.alphaCutoff);
+  let out = center(pixels, o.size);
   if (o.outline) out = addOutline(out, o.outlineColor);
   return { image: out, palette };
 }
