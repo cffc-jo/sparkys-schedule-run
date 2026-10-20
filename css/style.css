@@ -51,8 +51,8 @@ body {
 
 #frame {
   position: relative;
-  width: 270px;
-  height: 480px;
+  width: 240px;
+  height: 428px;
   background: var(--c-red);
   overflow: hidden;
 }
@@ -152,7 +152,7 @@ body {
 .title-buttons {
   position: absolute;
   left: 50%;
-  top: calc(var(--u) * 196);
+  top: calc(var(--u) * 150);
   transform: translateX(-50%);
   width: calc(var(--u) * 170);
   display: flex;
@@ -190,7 +190,7 @@ body {
 .complete-buttons {
   position: absolute;
   left: 50%;
-  top: calc(var(--u) * 300);
+  top: calc(var(--u) * 238);
   transform: translateX(-50%);
   width: calc(var(--u) * 170);
   display: flex;

@@ -29,11 +29,11 @@ export function createTitleScene(app) {
 
       if (app.crest) {
         const c = app.crest;
-        ctx.drawImage(c, Math.round(cx - c.width / 2), 18);
+        ctx.drawImage(c, Math.round(cx - c.width / 2), 12);
       }
 
       // Red title banner: Fire Red highlight, Red body, Deep Red season strip, Dark Red lip
-      const by = 66;
+      const by = 62;
       ctx.fillStyle = P.DARK_NAVY;
       ctx.fillRect(0, by - 1, W, 76);
       ctx.fillStyle = P.FIRE_RED;
@@ -49,8 +49,8 @@ export function createTitleScene(app) {
       drawText(ctx, 'SCHEDULE RUN', cx, by + 30, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
       drawText(ctx, `${app.schedule.season} SEASON`, cx, by + 58, { size: 8, align: 'center', color: P.FLAG_BLUE });
 
-      drawText(ctx, 'RUN THE SEASON.', cx, 300, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
-      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 314, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'RUN THE SEASON.', cx, 242, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 256, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
 
       // Sparky idles on the pitch at 2x for the showcase
       const bob = app.reducedMotion ? 0 : Math.round(Math.sin(t * 3) * 1);

@@ -2,8 +2,8 @@
 // unless noted. Edit freely; nothing else in the code should hard-code these numbers.
 export const GAME = {
   view: {
-    width: 270,                 // logical canvas width (portrait)
-    height: 480,                // logical canvas height
+    width: 240,                 // logical canvas width (portrait). Smaller = more zoomed in
+    height: 428,                // logical canvas height (~9:16)
     integerScaleMinFill: 0.88,  // use a whole-number device-pixel scale only if it fills >= 88% of the
                                 // available space; otherwise fall back to a fractional pixelated fit
   },
@@ -14,8 +14,10 @@ export const GAME = {
   },
 
   world: {
-    groundY: 432,               // y of the running line (Sparky's feet); the boards sit behind it
-    sparkyX: 52,                // Sparky's fixed screen x (centre of sprite)
+    groundY: 350,               // y of the running line (Sparky's feet)
+    pitchDepth: 64,             // px of pitch visible between the LED boards and the running line.
+                                // Pitch (boards' foot to screen bottom) = height - groundY + pitchDepth ~= 1/3 of the screen
+    sparkyX: 46,                // Sparky's fixed screen x (centre of sprite)
     titleBoardSpeed: 24,        // px/s the LED board text scrolls on the title screen
   },
 

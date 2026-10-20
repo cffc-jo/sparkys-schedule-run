@@ -8,7 +8,7 @@ const W = GAME.view.width;
 const H = GAME.view.height;
 const GROUND = GAME.world.groundY;
 const BOARD_H = 16;
-const BOARD_TOP = GROUND - 36 - BOARD_H; // boards sit behind a strip of pitch, so Sparky runs in front of them
+const BOARD_TOP = GROUND - GAME.world.pitchDepth - BOARD_H; // boards sit behind a strip of pitch, so Sparky runs in front of them
 const PITCH_TOP = BOARD_TOP + BOARD_H;
 
 function makeCanvas(w, h) {
@@ -184,12 +184,15 @@ function buildGroundTile() {
     x.fillStyle = S.GRASS_DARK; // shadow under the boards
     x.fillRect(px, 0, 1, 2);
     x.fillStyle = stripe;
-    x.fillRect(px, 2, 1, run + 12);
+    x.fillRect(px, 2, 1, run + 16);
     x.fillStyle = P.WHITE; // far touchline
     x.fillRect(px, 6, 1, 1);
-    for (let y = run + 14; y < th; y++) {
-      const t = Math.min(1, (y - run - 14) / 14);
-      x.fillStyle = ditherOn(px, y, t) ? S.GRASS_DEEP : S.GRASS_DARK;
+    x.fillRect(px, run + 18, 1, 2); // near touchline, just in front of Sparky
+    // Pitch-side strip: darker stripes, fading slightly toward the bottom edge
+    const near = px < 16 ? S.GRASS_B : S.GRASS_DARK;
+    for (let y = run + 20; y < th; y++) {
+      const t = Math.min(1, (y - run - 20) / 40) * 0.5;
+      x.fillStyle = ditherOn(px, y, t) ? S.GRASS_DEEP : near;
       x.fillRect(px, y, 1, 1);
     }
   }

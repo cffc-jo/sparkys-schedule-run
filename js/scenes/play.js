@@ -314,9 +314,9 @@ export function createPlayScene(app) {
       if (phase === 'countdown') {
         const i = Math.floor(countT / GAME.ui.countdownStepSeconds);
         const label = ['3', '2', '1'][i] || 'GO!';
-        drawText(ctx, label, W / 2, 170, { size: 32, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
+        drawText(ctx, label, W / 2, 130, { size: 32, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
       } else if (phase === 'run' && dist < course.obstacles[0]?.x * 0.5) {
-        drawText(ctx, 'GO!', W / 2, 170, { size: 32, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
+        drawText(ctx, 'GO!', W / 2, 130, { size: 32, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
       }
 
       if (phase === 'done' && result) this.renderComplete(ctx);
@@ -335,7 +335,7 @@ export function createPlayScene(app) {
     },
 
     renderComplete(ctx) {
-      const x = 25, y = 116, w = 220, h = 168;
+      const w = 214, h = 168, x = Math.round((W - w) / 2), y = 58;
       ctx.fillStyle = P.DARK_NAVY;
       ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
       ctx.fillStyle = P.WHITE;
