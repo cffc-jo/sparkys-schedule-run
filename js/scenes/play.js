@@ -8,7 +8,7 @@ import { createSparky } from '../game/sparky.js';
 import { logoBox, crate } from '../game/boxArt.js';
 import { createParticles } from '../game/particles.js';
 import { createBanner } from '../game/banner.js';
-import { ballFrames } from '../art/ballArt.js';
+import { ballFrames, smallBallFrames } from '../art/ballArt.js';
 import { createTimer, formatTime } from '../timer.js';
 import { currentSpeed } from '../speed.js';
 import { buildCourse } from '../course.js';
@@ -58,6 +58,7 @@ export function createPlayScene(app) {
   const particles = createParticles();
   const banner = createBanner();
   const balls = ballFrames();
+  const ballIcon = smallBallFrames()[0];
   const debug = isDebug();
   const sfx = (name) => { if (app.audio && app.audio.play) app.audio.play(name); };
 
@@ -481,19 +482,22 @@ export function createPlayScene(app) {
       for (const ball of ballState) {
         if (ball.got) continue;
         const sx = Math.round(ball.x - dist + SX);
-        if (sx < -12 || sx > W + 12) continue;
+        const r = BALL.size / 2;
+        if (sx < -BALL.size || sx > W + BALL.size) continue;
         const bob = reduced ? 0 : Math.round(Math.sin(t * 3 + ball.phase) * BALL.bobAmplitude);
         const cy = GROUND - ball.y + bob;
-        shadow(ctx, sx, 10, ball.y);
+        shadow(ctx, sx, BALL.size, ball.y - r);
         const frame = balls[reduced ? 0 : Math.floor(t * BALL.spinFps + ball.phase) % 4];
-        ctx.drawImage(frame, sx - 5, cy - 5);
-        // Sparkle: a twinkling pixel cross that hops around the ball
+        ctx.drawImage(frame, sx - r, cy - r);
+        // Sparkle: a twinkling pixel star that hops around the ball
         const k = Math.floor(t * 4 + ball.phase) % 4;
-        const [ox, oy] = [[-8, -7], [7, -6], [8, 5], [-7, 6]][k];
+        const [ox, oy] = [[-r - 4, -r + 1], [r + 3, -r + 2], [r + 4, r - 3], [-r - 3, r - 2]][k];
         if (Math.floor(t * 8 + ball.phase) % 2 === 0) {
           ctx.fillStyle = k % 2 ? P.FLAG_BLUE : P.WHITE;
-          ctx.fillRect(sx + ox, cy + oy - 1, 1, 3);
-          ctx.fillRect(sx + ox - 1, cy + oy, 3, 1);
+          ctx.fillRect(sx + ox, cy + oy - 2, 1, 5);
+          ctx.fillRect(sx + ox - 2, cy + oy, 5, 1);
+          ctx.fillStyle = P.WHITE;
+          ctx.fillRect(sx + ox, cy + oy, 1, 1);
         }
       }
     },
@@ -556,7 +560,7 @@ export function createPlayScene(app) {
       if (invT > 0) {
         const my = y + h + 3;
         const warning = invT <= BALL.warningSeconds && Math.floor(invT * 10) % 2 === 0;
-        ctx.drawImage(balls[0], x, my);
+        ctx.drawImage(ballIcon, x, my);
         ctx.fillStyle = P.DARK_NAVY;
         ctx.fillRect(x + 12, my + 2, w - 12, 7);
         ctx.fillStyle = P.NAVY;
