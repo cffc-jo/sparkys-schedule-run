@@ -5,19 +5,19 @@
 // Key: K outline/black fur, W white fur/chest band, R/F/D jersey, '.' transparent.
 import { drawGrid } from './pixelArt.js';
 
-// 3/4 head turned to the right: two floppy white ears with black spots flopping out to each
-// side, black spot on the crown, two big oval eyes glancing forward, black nose, big grin.
+// 3/4 head turned to the right: two floppy white ears with black tips flopping out to each
+// side, a black spot on top of the head, two big oval eyes glancing forward, black nose, big grin.
 const HEAD = [
   '.........KKKKKK.........',
-  '.......KKKKWWWWKK.......',
-  '..KKKKKWWWWWWWKKWKKKKKK.',
-  '.KWWWWKWWWWWWWWKWKWKKWWK',
-  'KWKKWWKWWKKWKKWWWKWKKWWK',
-  'KWKKWWKWKWWKWWKWWKWWWKWK',
+  '.......KKWKKKWWKK.......',
+  '..KKKKKWWKKKKWWWWKKKKKK.',
+  '.KWWWWKWWWWWWWWWWKWWWKKK',
+  'KWWWWWKWWKKWKKWWWKWWWKKK',
+  'KWWWWWKWKWWKWWKWWKWWKKKK',
   'KWWWWWKWKWKKWKKWWWKKKKK.',
-  'KWWKKWKWKWKKWKKWWWWK....',
-  '.KWKKWKWKWWKWWKKKKWK....',
-  '..KWWKKWWKKWKKWKKKWK....',
+  'KKKWWWKWKWKKWKKWWWWK....',
+  '.KKKKWKWKWWKWWKKKKWK....',
+  '..KKKKKWWKKWKKWKKKWK....',
   '...KK.KWWKWWWWWWKWWK....',
   '.......KWWKKKKKKWWK.....',
   '........KWWFFWWKWK......',
