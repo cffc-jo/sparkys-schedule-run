@@ -21,10 +21,10 @@ const GROUND = GAME.world.groundY;
 const SX = GAME.world.sparkyX;
 const OB = GAME.obstacles;
 const BALL = GAME.balls;
-const GOAL_W = 30;      // goal mouth width at the finish
-const GOAL_H = 56;      // crossbar height
+// Finish goal, seen from the side. `lead` = how far before the finish point the goal line sits,
+// so Sparky ends up standing inside the net.
+const GOAL = { height: 56, topDepth: 10, depth: 42, lead: 18 };
 const GLOW = [P.FIRE_RED, P.FLAG_BLUE, P.RED, P.BLUE];
-const CREST = GAME.world.crestSize;
 
 function vibrate(ms) {
   try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* unsupported (iOS) */ }
@@ -386,33 +386,52 @@ export function createPlayScene(app) {
       if (phase === 'done' && result) this.renderComplete(ctx);
     },
 
+    // Side-on soccer goal: upright post on the goal line, short top bar, back support sloping
+    // down to the ground, net mesh filling the trapezoid. Sparky finishes standing inside it.
     renderFinishLine(ctx) {
       const fx = Math.round(course.finishX - dist + SX);
-      if (fx < -60 || fx > W + 60) return;
-      const left = fx - GOAL_W / 2;
-      const top = GROUND - GOAL_H;
-      // Chequered finish line on the grass
+      if (fx < -80 || fx > W + 80) return;
+      const post = fx - GOAL.lead;          // goal line
+      const top = GROUND - GOAL.height;
+      const backTop = post + GOAL.topDepth; // where the top bar meets the sloping support
+      const back = post + GOAL.depth;       // where the support meets the ground
+      const backX = (y) => backTop + ((y - top) * (back - backTop)) / GOAL.height;
+
+      // Chequered goal line on the grass
       for (let y = GROUND - 2; y < GROUND + 14; y += 2) {
         for (let i = 0; i < 2; i++) {
           ctx.fillStyle = (((y - GROUND) / 2 + i) % 2 === 0) ? P.WHITE : P.DARK_NAVY;
-          ctx.fillRect(fx - 2 + i * 2, y, 2, 2);
+          ctx.fillRect(post - 1 + i * 2, y, 2, 2);
         }
       }
-      // Net
-      ctx.fillStyle = P.FLAG_BLUE;
-      for (let x = left + 4; x < left + GOAL_W; x += 4) ctx.fillRect(x, top + 3, 1, GOAL_H - 3);
-      for (let y = top + 6; y < GROUND; y += 4) ctx.fillRect(left + 3, y, GOAL_W - 4, 1);
-      // Posts and crossbar (white with dark outline)
-      ctx.fillStyle = P.DARK_NAVY;
-      ctx.fillRect(left - 1, top - 1, 5, GOAL_H + 1);
-      ctx.fillRect(left + GOAL_W - 4, top - 1, 5, GOAL_H + 1);
-      ctx.fillRect(left - 1, top - 1, GOAL_W + 2, 5);
+      // Net mesh, clipped to the trapezoid
       ctx.fillStyle = P.WHITE;
-      ctx.fillRect(left, top, 3, GOAL_H);
-      ctx.fillRect(left + GOAL_W - 3, top, 3, GOAL_H);
-      ctx.fillRect(left, top, GOAL_W, 3);
-      // Club crest above the goal
-      if (app.crest) ctx.drawImage(app.crest, Math.round(fx - CREST / 2), top - CREST - 4, CREST, CREST);
+      for (let x = post + 4; x < back; x += 4) {
+        const yTop = x <= backTop ? top + 2 : top + ((x - backTop) * GOAL.height) / (back - backTop);
+        ctx.fillRect(x, Math.round(yTop), 1, GROUND - Math.round(yTop));
+      }
+      for (let y = top + 4; y < GROUND; y += 4) {
+        ctx.fillRect(post + 2, y, Math.round(backX(y)) - post - 2, 1);
+      }
+      // Back support (sloping) and ground bar: dark outline, then white
+      for (let y = top; y <= GROUND; y++) {
+        const x = Math.round(backX(y));
+        ctx.fillStyle = P.DARK_NAVY;
+        ctx.fillRect(x - 1, y, 4, 1);
+      }
+      for (let y = top; y <= GROUND; y++) {
+        ctx.fillStyle = P.WHITE;
+        ctx.fillRect(Math.round(backX(y)), y, 2, 1);
+      }
+      ctx.fillStyle = P.WHITE;
+      ctx.fillRect(post, GROUND - 1, back - post, 1);
+      // Top bar and front post (thicker, so the goal frame reads clearly)
+      ctx.fillStyle = P.DARK_NAVY;
+      ctx.fillRect(post - 1, top - 1, backTop - post + 3, 4);
+      ctx.fillRect(post - 1, top - 1, 5, GOAL.height + 1);
+      ctx.fillStyle = P.WHITE;
+      ctx.fillRect(post, top, backTop - post + 1, 2);
+      ctx.fillRect(post, top, 3, GOAL.height);
     },
 
     renderBoxes(ctx, reduced) {
