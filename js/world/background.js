@@ -189,7 +189,7 @@ function buildNearCity() {
   x.fillRect(hx + 16, base - 150, 1, 22);
 
   drawWrigley(x, 54, base);
-  drawStadium(x, 180, base);
+  drawStadium(x, 166, base);
 
   // Aircraft warning lights
   x.fillStyle = P.FIRE_RED;
@@ -234,34 +234,46 @@ function drawWrigley(x, x0, base) {
   rect(S.WRIGLEY, 12, 106, 1, 6);
 }
 
-// McDonald's Park (proposed Chicago Fire FC stadium at The 78, Gensler design): low and
-// symmetrical, brick-and-glass volumes, dark ribbed metal entry wall at the centre, and a steel
-// canopy that flares up at the ends.
+// McDonald's Park (planned Chicago Fire FC stadium at The 78): a long, low red-brick building
+// with two rows of large dark-glass window bays in light frames, a flat dark roof overhanging
+// the top, and a taller corner block with Fire-red banners. (x = context, x0 = left edge)
 function drawStadium(x, x0, base) {
-  const W0 = 54;
+  const LEN = 70;          // facade length
+  const H = 24;            // brick height
   const rect = (c, rx, ry, w, h) => { x.fillStyle = c; x.fillRect(x0 + rx, base - ry - h, w, h); };
-  // Brick wings with glass bands
-  for (const [wx, ww] of [[0, 20], [W0 - 20, 20]]) {
-    rect(S.STADIUM_BRICK, wx, 0, ww, 20);
-    rect(S.STADIUM_BRICK_DARK, wx, 0, ww, 2);
-    rect(S.STADIUM_GLASS, wx + 1, 13, ww - 2, 3);
-    rect(S.STADIUM_GLASS, wx + 1, 6, ww - 2, 2);
-    for (let px = wx + 3; px < wx + ww - 2; px += 4) rect(S.STADIUM_BRICK_DARK, px, 6, 1, 2);
+
+  // Brick body + slightly taller corner block on the right
+  rect(S.STADIUM_BRICK, 0, 0, LEN, H);
+  rect(S.STADIUM_BRICK, LEN - 14, 0, 14, H + 3);
+  rect(S.STADIUM_BRICK_DARK, 0, 0, LEN, 1);              // plinth
+  rect(S.STADIUM_BRICK_DARK, 0, 11, LEN - 14, 1);        // floor line between window rows
+  rect(S.STADIUM_BRICK_DARK, LEN - 15, 0, 1, H + 3);     // corner edge
+
+  // Window bays: two rows of dark glass with a light frame on top and a mullion down the middle
+  const bay = (bx, by, w, h) => {
+    rect(S.STADIUM_FRAME, bx, by, w, h);
+    rect(S.STADIUM_GLASS, bx + 1, by, w - 2, h - 1);
+    rect(S.STADIUM_FRAME, bx + Math.floor(w / 2), by, 1, h - 1);
+  };
+  for (let bx = 2; bx + 6 <= LEN - 16; bx += 7) {
+    bay(bx, 13, 6, 8);   // upper concourse
+    bay(bx, 2, 6, 8);    // street level
   }
-  // Central dark metal entry wall with vertical ribs
-  rect(S.STADIUM_METAL, 20, 0, W0 - 40, 24);
-  for (let px = 21; px < W0 - 20; px += 2) rect(S.STADIUM_METAL_RIB, px, 2, 1, 20);
-  rect(S.STADIUM_GLASS, 23, 0, W0 - 46, 5); // entrance doors
-  // Steel canopy: thin at the middle, flaring up and out at the ends
-  const half = (W0 + 8) / 2;
-  for (let i = 0; i < W0 + 8; i++) {
-    const lift = Math.round((Math.abs(i - half + 0.5) / half) ** 2 * 7);
-    rect(S.STADIUM_STEEL_DARK, i - 4, 24 + lift, 1, 1);
-    rect(S.STADIUM_STEEL, i - 4, 25 + lift, 1, 2);
-  }
-  // Canopy supports and a Fire-red band under the roof line
-  for (const px of [2, 14, W0 - 15, W0 - 3]) rect(S.STADIUM_STEEL_DARK, px, 20, 1, 5);
-  rect(P.FIRE_RED, 20, 22, W0 - 40, 1);
+  // Corner block: tall glass slots and two Fire-red banners
+  bay(LEN - 12, 2, 4, 8);
+  bay(LEN - 6, 2, 4, 8);
+  rect(P.FIRE_RED, LEN - 12, 13, 2, 10);
+  rect(P.FIRE_RED, LEN - 5, 13, 2, 10);
+  rect(P.WHITE, LEN - 12, 18, 2, 1);
+  rect(P.WHITE, LEN - 5, 18, 2, 1);
+  // Light sign band along the top of the long facade
+  rect(S.STADIUM_FRAME, 20, H - 2, 16, 1);
+
+  // Flat, dark roof overhanging the whole building, lifted slightly above the brick
+  rect(S.STADIUM_ROOF, -3, H + 1, LEN + 6, 3);
+  rect(S.STADIUM_ROOF_EDGE, -3, H + 1, LEN + 6, 1);       // lit underside edge
+  rect(S.STADIUM_ROOF, -3, H + 4, LEN + 6, 1);
+  for (const px of [0, 18, 36, LEN - 16]) rect(S.STADIUM_ROOF, px, H, 1, 1); // supports
 }
 
 // Mowed pitch tile from the foot of the boards to the bottom of the screen.
