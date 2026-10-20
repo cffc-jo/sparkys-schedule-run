@@ -18,11 +18,26 @@ export function seasonForDate(date) {
   return season;
 }
 
+// True for October dates (jack-o'-lanterns join the fall scenery).
+export function isOctober(date) {
+  return /^\d{4}-10-\d{2}$/.test(String(date || '').trim());
+}
+
+// Scenery options for a match date: { season, isOctober }, or null for undated matches.
+export function sceneryForDate(date) {
+  const season = seasonForDate(date);
+  return season ? { season, isOctober: isOctober(date) } : null;
+}
+
 // Season to show before any box has been passed: the first dated match, else summer.
 export function openingSeason(matches) {
+  return openingScenery(matches).season;
+}
+
+export function openingScenery(matches) {
   for (const m of matches) {
-    const s = seasonForDate(m.date);
+    const s = sceneryForDate(m.date);
     if (s) return s;
   }
-  return 'summer';
+  return { season: 'summer', isOctober: false };
 }

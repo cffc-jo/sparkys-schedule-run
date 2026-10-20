@@ -35,6 +35,7 @@ export const SEASONS = Object.freeze({
     GRASS_TIP: '#9BDB5A', GRASS_A: '#5CB63B', GRASS_B: '#4EA431', GRASS_DARK: '#3D8A27', GRASS_DEEP: '#2F6E1F',
     SPECKS: [],
     WEATHER: null,
+    DECOR: [],
   }),
   spring: Object.freeze({
     ...CITY,
@@ -43,7 +44,8 @@ export const SEASONS = Object.freeze({
     SUN: '#FFEC9C', SUN_EDGE: '#FFD86A',
     GRASS_TIP: '#B5E67A', GRASS_A: '#6CC04A', GRASS_B: '#5DB040', GRASS_DARK: '#4A9A33', GRASS_DEEP: '#3A7E28',
     SPECKS: ['#FFFFFF', '#F7B6D2', '#FFE27A'],   // little flowers in the grass
-    WEATHER: { kind: 'petal', colors: ['#F7B6D2', '#FFFFFF'], rate: 3 },
+    WEATHER: { kind: 'petal', colors: ['#F7B6D2', '#FFFFFF'], rate: 4 },
+    DECOR: [],
   }),
   fall: Object.freeze({
     ...CITY,
@@ -52,7 +54,9 @@ export const SEASONS = Object.freeze({
     SUN: '#FFC066', SUN_EDGE: '#F39C3D',
     GRASS_TIP: '#C9B44A', GRASS_A: '#8FA83A', GRASS_B: '#7E9632', GRASS_DARK: '#6B7F2A', GRASS_DEEP: '#55661F',
     SPECKS: ['#E07B28', '#C0392B', '#E8B53A'],   // fallen leaves
-    WEATHER: { kind: 'leaf', colors: ['#E07B28', '#C0392B', '#E8B53A'], rate: 5 },
+    WEATHER: { kind: 'leaf', colors: ['#E07B28', '#C0392B', '#E8B53A', '#B85A14'], rate: 14 },
+    DECOR: [['leafPile', 0.7]],                  // [sprite, chance per pitch-side slot]
+    DECOR_OCTOBER: [['leafPile', 0.35], ['pumpkin', 0.5]], // + jack-o'-lanterns in October
   }),
   winter: Object.freeze({
     ...CITY,
@@ -63,7 +67,8 @@ export const SEASONS = Object.freeze({
     GRASS_TIP: '#7FA88A', GRASS_A: '#DCE7EE', GRASS_B: '#CCDBE5', GRASS_DARK: '#B4C7D5', GRASS_DEEP: '#9AB0C2',
     SPECKS: ['#7FA88A', '#FFFFFF'],              // grass tufts + fresh snow
     LINE: '#FFFFFF',                             // touchlines (crisp white against the snow)
-    WEATHER: { kind: 'snow', colors: ['#FFFFFF', '#EEF4F8'], rate: 22 },
+    WEATHER: { kind: 'snow', colors: ['#FFFFFF', '#EEF4F8'], rate: 45 },                  // flakes per second
+    DECOR: [['snowman', 0.5]],
   }),
 });
 

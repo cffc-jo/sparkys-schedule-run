@@ -8,7 +8,7 @@ import { classifyGesture } from '../js/input/gesture.js';
 import { buildCourse, recoverTime, assignTypes, createRng } from '../js/course.js';
 import { createSparky } from '../js/game/sparky.js';
 import { SPARKY_SHEET } from '../config/sprites.js';
-import { seasonForDate, openingSeason } from '../js/season.js';
+import { seasonForDate, openingSeason, isOctober } from '../js/season.js';
 
 export const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -201,4 +201,10 @@ test('seasons: undated matches keep the current season; opening season = first d
   eq(openingSeason([{ date: 'TBD' }, { date: '2027-08-21' }]), 'summer');
   eq(openingSeason([{ date: 'TBD' }]), 'summer');
   eq(openingSeason([{ date: '2026-02-21' }]), 'winter');
+});
+test("seasons: October dates bring out the jack-o'-lanterns", () => {
+  eq(isOctober('2026-10-10'), true);
+  eq(isOctober('2026-09-26'), false);
+  eq(isOctober('2026-11-07'), false);
+  eq(isOctober('TBD'), false);
 });

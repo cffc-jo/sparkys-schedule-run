@@ -5,6 +5,7 @@
 import { PALETTE as P, SEASONS } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { textSprite } from '../pixelText.js';
+import { decorSprites } from '../art/decorArt.js';
 
 const W = GAME.view.width;
 const H = GAME.view.height;
@@ -37,6 +38,18 @@ function ditherOn(x, y, t) {
 
 const S = SEASONS.summer; // the skyline is the same all year
 const FADE_SECONDS = 2;
+const MAX_FLAKES = 420;
+// Pitch-side props (snowmen, leaf piles, jack-o'-lanterns): one possible prop per slot along
+// the far side of the pitch, behind Sparky's running line.
+const DECOR_SLOT = 72;                      // px between slots
+const DECOR_BASE = PITCH_TOP + 26;          // props stand here (feet)
+
+// Deterministic 0..1 noise per slot so props are the same every run
+function slotNoise(k, salt) {
+  let h = (k * 374761393 + salt * 668265263) >>> 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0;
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
 
 function buildSky(S) {
   const h = BOARD_TOP;
@@ -241,8 +254,10 @@ export function createBackground({ reducedMotion = () => false } = {}) {
     ground: buildGroundTile(SEASONS[name]),
   });
   const ground = look('summer').ground; // tile size is the same for every season
-  const state = { far: 0, near: 0, groundX: 0, boardX: 0 };
+  const state = { far: 0, near: 0, groundX: 0, boardX: 0, travel: 0 };
   let season = 'summer';
+  let october = false;      // jack-o'-lanterns in October (fall only)
+  let prevOctober = false;
   let prevSeason = null; // fading out
   let fade = 1;          // 0..1 progress of the current crossfade
   let flakes = [];       // weather particles
@@ -264,22 +279,62 @@ export function createBackground({ reducedMotion = () => false } = {}) {
     ctx.globalAlpha = 1;
   }
 
+  function decorList(name, oct) {
+    const s = SEASONS[name];
+    return (oct && s.DECOR_OCTOBER) ? s.DECOR_OCTOBER : s.DECOR;
+  }
+
+  function drawDecor(ctx, list, alpha) {
+    if (!list.length || alpha <= 0) return;
+    const sprites = decorSprites();
+    ctx.globalAlpha = alpha;
+    const first = Math.floor((state.travel - 40) / DECOR_SLOT);
+    for (let k = first; k * DECOR_SLOT - state.travel < W + 40; k++) {
+      const roll = slotNoise(k, 1);
+      let acc = 0;
+      let pick = null;
+      for (const [name, chance] of list) {
+        acc += chance;
+        if (roll < acc) { pick = name; break; }
+      }
+      if (!pick) continue;
+      const img = sprites[pick];
+      const x = Math.round(k * DECOR_SLOT + slotNoise(k, 2) * (DECOR_SLOT - 30) - state.travel);
+      ctx.drawImage(img, x, DECOR_BASE - img.height);
+      // A second pumpkin or snowman now and then, for little groups
+      if (pick !== 'leafPile' && slotNoise(k, 3) < 0.3) ctx.drawImage(img, x + img.width + 2, DECOR_BASE - img.height + 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function spawnFlake(w, y) {
+    flakes.push({
+      kind: w.kind,
+      x: Math.random() * (W + 60),
+      y,
+      vy: w.kind === 'snow' ? 34 + Math.random() * 26 : 42 + Math.random() * 24,
+      vx: w.kind === 'snow' ? -6 - Math.random() * 8 : -16 - Math.random() * 16,
+      phase: Math.random() * 6.28,
+      color: w.colors[Math.floor(Math.random() * w.colors.length)],
+      size: w.kind === 'snow' && Math.random() < 0.35 ? 2 : 1,
+    });
+  }
+
+  // Fill the whole sky at once (so a new season doesn't start with an empty sky)
+  function prefillWeather() {
+    const w = SEASONS[season].WEATHER;
+    if (!w || reducedMotion()) return;
+    const count = Math.min(MAX_FLAKES, Math.round(w.rate * (H / 45)));
+    for (let i = 0; i < count && flakes.length < MAX_FLAKES; i++) spawnFlake(w, Math.random() * H);
+  }
+
   function updateWeather(dt, speed) {
     const w = SEASONS[season].WEATHER;
     if (w && !reducedMotion()) {
-      spawnAcc += w.rate * dt * fade;
-      while (spawnAcc >= 1 && flakes.length < 90) {
+      spawnAcc += w.rate * dt;
+      while (spawnAcc >= 1 && flakes.length < MAX_FLAKES) {
         spawnAcc -= 1;
-        flakes.push({
-          kind: w.kind,
-          x: Math.random() * (W + 60),
-          y: -4,
-          vy: w.kind === 'snow' ? 18 + Math.random() * 16 : 22 + Math.random() * 14,
-          vx: w.kind === 'snow' ? -6 - Math.random() * 6 : -14 - Math.random() * 14,
-          phase: Math.random() * 6.28,
-          color: w.colors[Math.floor(Math.random() * w.colors.length)],
-          size: w.kind === 'leaf' ? 2 : 1,
-        });
+        spawnFlake(w, -4);
       }
     }
     for (const f of flakes) {
@@ -298,6 +353,7 @@ export function createBackground({ reducedMotion = () => false } = {}) {
       state.far = wrap(state.far + speed * 0.06 * dt, farCity.width);
       state.near = wrap(state.near + speed * 0.14 * dt, nearCity.width);
       state.groundX = wrap(state.groundX + speed * dt, ground.width);
+      state.travel += speed * dt;
       state.boardX += (boardSpeed + speed) * dt;
       for (const cl of clouds) {
         cl.x -= (cl.speed + speed * 0.03) * dt;
@@ -310,18 +366,22 @@ export function createBackground({ reducedMotion = () => false } = {}) {
       updateWeather(dt, speed);
     },
 
-    // Switch to 'winter' | 'spring' | 'summer' | 'fall'. Crossfades unless `instant`.
-    setSeason(name, { instant = false } = {}) {
-      if (!SEASONS[name] || name === season) return;
+    // Switch to 'winter' | 'spring' | 'summer' | 'fall' (`isOctober` adds jack-o'-lanterns in fall).
+    // Crossfades unless `instant`.
+    setSeason(name, { instant = false, isOctober = false } = {}) {
+      if (!SEASONS[name] || (name === season && isOctober === october)) return;
       if (instant || reducedMotion()) {
         prevSeason = null;
         fade = 1;
         flakes = [];
       } else {
         prevSeason = season;
+        prevOctober = october;
         fade = 0;
       }
       season = name;
+      october = isOctober;
+      prefillWeather();
       look(name); // make sure it's built before it's drawn
     },
     get season() { return season; },
@@ -362,10 +422,19 @@ export function createBackground({ reducedMotion = () => false } = {}) {
         drawGround(ctx, season, 1);
       }
 
-      // Weather (snow / petals / leaves), drifting with the wind and the run
+      // Pitch-side props for the season, fading with it
+      if (prevSeason) drawDecor(ctx, decorList(prevSeason, prevOctober), 1 - fade);
+      drawDecor(ctx, decorList(season, october), prevSeason ? fade : 1);
+
+      // Weather (snow / petals / leaves), drifting with the wind and the run. Leaves tumble.
       for (const f of flakes) {
         ctx.fillStyle = f.color;
-        ctx.fillRect(Math.round(f.x), Math.round(f.y), f.size, f.size);
+        if (f.kind === 'leaf') {
+          const flip = Math.sin(f.phase * 1.7) > 0;
+          ctx.fillRect(Math.round(f.x), Math.round(f.y), flip ? 3 : 2, flip ? 1 : 2);
+        } else {
+          ctx.fillRect(Math.round(f.x), Math.round(f.y), f.size, f.size);
+        }
       }
     },
 

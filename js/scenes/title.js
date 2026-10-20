@@ -3,7 +3,7 @@ import { PALETTE as P } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { drawText } from '../pixelText.js';
 import { createAnimator } from '../sprite.js';
-import { openingSeason } from '../season.js';
+import { openingScenery } from '../season.js';
 
 export function createTitleScene(app) {
   const anim = createAnimator(app.sheet.config);
@@ -16,7 +16,8 @@ export function createTitleScene(app) {
       app.ui.showScreen('title');
       app.ui.setPauseVisible(false);
       app.audio.music('title');
-      app.bg.setSeason(openingSeason(app.schedule.matches), { instant: true });
+      const opening = openingScenery(app.schedule.matches);
+      app.bg.setSeason(opening.season, { instant: true, isOctober: opening.isOctober });
     },
 
     update(dt) {

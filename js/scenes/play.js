@@ -16,7 +16,7 @@ import { createInput } from '../input/input.js';
 import { track } from '../analytics.js';
 import { isDebug } from '../debugFlag.js';
 import { recordRun } from '../best.js';
-import { seasonForDate, openingSeason } from '../season.js';
+import { sceneryForDate, openingScenery } from '../season.js';
 
 const W = GAME.view.width;
 const GROUND = GAME.world.groundY;
@@ -122,7 +122,8 @@ export function createPlayScene(app) {
     result = null;
     particles.clear();
     banner.clear();
-    app.bg.setSeason(openingSeason(app.schedule.matches), { instant: true });
+    const opening = openingScenery(app.schedule.matches);
+    app.bg.setSeason(opening.season, { instant: true, isOctober: opening.isOctober });
     sparky.reset();
     timer.reset();
     boxes = course.obstacles.map((ob) => ({
@@ -167,8 +168,8 @@ export function createPlayScene(app) {
   // that match's season.
   function reveal(b) {
     banner.show(b.ob.match, b.art);
-    const season = seasonForDate(b.ob.match.date);
-    if (season) app.bg.setSeason(season);
+    const scenery = sceneryForDate(b.ob.match.date);
+    if (scenery) app.bg.setSeason(scenery.season, { isOctober: scenery.isOctober });
   }
 
   function clearBox(b) {
