@@ -42,52 +42,53 @@ const TORSO = [
   '.........KRRKRRDK.......',
 ];
 
-// Arms: white fur with a black spot, placed at the shoulder.
-const ARM_DOWN = { x: 12, y: 15, art: ['KKK', 'KWK', 'KWK', 'KWK', 'KKK', 'KKK'] };
-const ARM_FWD = { x: 13, y: 15, art: ['KKKK...', 'KWWKKKK', '.KKWKKK', '...KKKK'] };
-const ARM_BACK = { x: 5, y: 15, art: ['...KKKK', 'KKKKWWK', 'KKKWKK.', 'KKKK...'] };
-const ARM_UP = { x: 16, y: 5, art: ['....KKKK', '....KKKK', '....KKKK', '....KWK.', '....KWK.', '...KWK..', '...KWK..', '..KWK...', '.KWK....', 'KWK.....'] };
+// Arms: white fur, black fists, placed at the shoulder.
+const ARM_DOWN = { x: 12, y: 15, art: ['KKKK', 'KWWK', 'KWWK', 'KWWK', 'KKKK', 'KKKK'] };
+const ARM_FWD = { x: 13, y: 15, art: ['KKKKK...', 'KWWWWKKK', 'KWWWWKKK', '.KKKKKKK'] };
+const ARM_BACK = { x: 4, y: 15, art: ['....KKKK', '.KKKWWWK', 'KKKWWWK.', 'KKKKKK..'] };
+const ARM_UP = { x: 16, y: 5, art: ['....KKKK', '....KKKK', '....KKKK', '....KWWK', '...KWWK.', '...KWWK.', '..KWWK..', '.KWWK...', 'KWWK....', 'KWK.....'] };
 
-// Legs (rows 23-31): strong thighs, white spotted legs, dark cleats.
+// Legs (rows 23-31): strong thighs and shins, white spotted legs, dark cleats.
 const LEGS_STAND = [
   '..........KWWKWWK.......',
   '..........KWWKWWK.......',
   '..........KWKKWWK.......',
   '..........KWWKWKK.......',
-  '...........KWKWK........',
-  '...........KWKWK........',
-  '...........KKKWK........',
-  '..........KKKKKKK.......',
+  '..........KWWKWWK.......',
+  '..........KWWKWWK.......',
+  '..........KKWKWWK.......',
   '..........KKKKKKKK......',
+  '..........KKKKKKKKK.....',
 ];
 const LEGS_STRIDE = [
   '.........KWWKWWK........',
   '........KWWK.KWWK.......',
-  '.......KWKK...KWWK......',
-  '......KWWK.....KWK......',
-  '......KWK......KWK......',
-  '.....KWK........KWK.....',
-  '.....KKK........KWK.....',
-  '....KKKK........KKKKK...',
-  '...KKKK.........KKKKK...',
+  '.......KKWK...KWWK......',
+  '......KWWK.....KWWK.....',
+  '......KWWK.....KWKK.....',
+  '.....KWWK.......KWWK....',
+  '.....KWKK.......KWWK....',
+  '....KKKKK.......KKKKKK..',
+  '...KKKKK........KKKKKK..',
 ];
 const LEGS_PASS = [
   '.........KWWWWWK........',
   '..........KWWWWWWK......',
-  '..........KWWKKKWK......',
-  '...........KWK.KWK......',
-  '...........KWK.KWK......',
-  '...........KKK.KKKK.....',
-  '...........KWK..........',
-  '..........KKKKKK........',
-  '..........KKKKKK........',
+  '..........KWWKKKWWK.....',
+  '..........KWWK.KWWK.....',
+  '..........KWKK.KWWK.....',
+  '..........KWWK.KKKKK....',
+  '..........KWWK..........',
+  '..........KKKKKKK.......',
+  '..........KKKKKKK.......',
 ];
 const LEGS_TUCK = [
   '.........KWWWWWWK.......',
-  '.........KKKKKWWK.......',
-  '.............KWWK.......',
-  '............KKKKKK......',
-  '............KKKKK.......',
+  '.........KWWWWWWK.......',
+  '............KWWWK.......',
+  '............KWWWK.......',
+  '...........KKKKKKK......',
+  '...........KKKKKK.......',
 ];
 
 // Crouch: body tucked low behind the lowered head (15px tall, well under floating boxes).
