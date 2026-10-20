@@ -290,12 +290,13 @@ body {
   height: calc(var(--u) * 24);
   display: grid;
   place-items: center;
+  padding: calc(var(--u) * 2); /* even white margin around every logo */
   background: var(--c-white);
   color: var(--c-navy);
   font-size: calc(var(--u) * 6);
   image-rendering: pixelated;
 }
-.opponents .logo img { width: 100%; height: 100%; image-rendering: pixelated; }
+.opponents .logo img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .opponents .who { display: grid; min-width: 0; }
 .opponents .who .name { overflow-wrap: anywhere; }
 .opponents .who .date { color: var(--c-flag-blue); }

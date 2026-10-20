@@ -91,16 +91,18 @@ test('course: one obstacle per match, in schedule order', () => {
   eq(c.obstacles.length, 34);
   c.obstacles.forEach((o, i) => eq(o.match.matchNumber, i + 1));
 });
-test('course: every gap is reactable at MAX speed', () => {
+test('course: every gap is reactable at the fastest speed possible at that point', () => {
   for (const n of [34, 12, 50]) {
     const c = buildCourse(schedule(n), GAME);
     const vmax = maxSpeed(GAME.speed);
     for (let i = 0; i < c.obstacles.length - 1; i++) {
       const a = c.obstacles[i], b = c.obstacles[i + 1];
+      // Speed only rises with clears, so i+1 clears is the fastest anyone can be going here.
+      const vHere = Math.min(currentSpeed(i + 1, GAME.speed), vmax);
       const open = b.x - (a.x + a.w); // clear ground between the two boxes
-      const needed = (recoverTime(a.type, GAME.physics) + GAME.course.reactionGap) * vmax;
+      const needed = (recoverTime(a.type, GAME.physics) + GAME.course.reactionGap) * vHere;
       ok(open >= needed - 1e-6, `n=${n} gap ${i}->${i + 1}: ${open.toFixed(1)}px < ${needed.toFixed(1)}px`);
-      ok(open / vmax >= GAME.course.reactionGap, `gap ${i} reaction time ${(open / vmax).toFixed(2)}s`);
+      ok(open / vHere >= GAME.course.reactionGap, `gap ${i} reaction time ${(open / vHere).toFixed(2)}s`);
     }
   }
 });

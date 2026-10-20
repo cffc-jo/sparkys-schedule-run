@@ -91,7 +91,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
    If a logo is missing, the box shows the club code instead, so nothing breaks.
 
-3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. The timing targets (clean run about 60–90 s, reaction gaps at max speed) are enforced by the tests.
+3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:54).
 
 4. **Commit and push.** Pages redeploys automatically.
 
@@ -203,7 +203,7 @@ They cover:
 - the speed formula and its cap
 - timer and penalty math (final = raw + 10 s × hits, exactly)
 - the gesture classifier
-- obstacle spacing at **max speed**
+- obstacle spacing at the fastest speed possible at each point
 - course rules: one box per match, the type mix, easy start, no early hard back-to-back, deterministic layout, any schedule length
 - jump physics against obstacle heights
 - ball placement
@@ -221,28 +221,28 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | loop | `maxFrameTime` | 0.25 | Clamp for long frames |
 | world | `groundY` | 350 | Running line |
 | world | `pitchDepth` | 64 | Pitch visible behind Sparky (≈ 1/3 of the screen is pitch) |
-| world | `sparkyX` | 46 | Sparky's fixed x |
+| world | `sparkyX` | 40 | Sparky's fixed x (further left = more look-ahead) |
 | world | `crestSize` | 44 | Crest size on the title |
 | world | `titleBoardSpeed` | 24 | LED board scroll on the title |
-| physics | `gravity` | 1500 | Gravity |
-| physics | `jumpVelocity` | 450 | First jump (apex ≈ 67 px) |
-| physics | `doubleJumpVelocity` | 450 | Second jump |
+| physics | `gravity` | 2200 | Gravity (snappy arcade jumps) |
+| physics | `jumpVelocity` | 545 | First jump (apex ≈ 67 px, airtime ≈ 0.5 s) |
+| physics | `doubleJumpVelocity` | 545 | Second jump |
 | physics | `maxDoubleJumps` | 1 | Double jumps per airtime |
 | physics | `fastFallVelocity` | 900 | Swipe-down slam speed |
-| physics | `duckDuration` | 0.6 | Duck length (no hold) |
+| physics | `duckDuration` | 0.45 | Duck length (no hold) |
 | physics | `jumpBufferTime` | 0.10 | Early jump press remembered |
 | physics | `hitStumbleTime` | 0.35 | Stumble frame after a hit |
-| speed | `baseSpeed` | 150 | Starting world speed (px/s) |
-| speed | `boostPerClear` | 0.008 | +0.8% per cleared box |
-| speed | `maxSpeedMultiplier` | 1.3 | Speed cap |
-| course | `leadIn` | 330 | Open ground before box 1 |
-| course | `reactionGap` | 1.0 | Seconds of open ground between boxes **at max speed** |
-| course | `extraSpacingMax` | 0.35 | Extra room early in the season |
+| speed | `baseSpeed` | 190 | Starting world speed (px/s) |
+| speed | `boostPerClear` | 0.01 | +1% per cleared box (≈ +34% by the end of a clean run) |
+| speed | `maxSpeedMultiplier` | 1.35 | Speed cap |
+| course | `leadIn` | 300 | Open ground before box 1 |
+| course | `reactionGap` | 0.8 | Seconds of open ground between boxes at the **fastest speed possible at that point** (clean run, capped) |
+| course | `extraSpacingMax` | 0.12 | Extra room early in the season |
 | course | `seed` | `''` | Layout seed (blank = derived from the schedule) |
 | course | `easyStartCount` | 6 | First boxes are always ground boxes |
 | course | `typeMix` | 60/25/15 | Ground / floating / tall |
 | course | `noBackToBackHardUntil` | 0.6 | No two hard boxes in a row for this fraction of the run |
-| course | `finishRunout` | 260 | Ground from the last box to the goal |
+| course | `finishRunout` | 220 | Ground from the last box to the goal |
 | obstacles | `boxSize`, `logoSize` | 30, 24 | Box and logo slot |
 | obstacles | `floatingBottom` | 20 | Gap under floating boxes (must be between duck and stand heights) |
 | obstacles | `tallCrateHeight` | 44 | Crate under tall boxes (forces a double jump) |
@@ -330,7 +330,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Clearing boxes gradually speeds the run up.
 - [ ] Soccer balls: collecting one gives a glow, a draining meter, faster music and 5 s of invincibility. Boxes shatter with no penalty and still reveal. Collecting another resets the meter to 5 s. The meter blinks in the last second.
 - [ ] All 5 balls can be collected in a clean run without hitting anything.
-- [ ] A clean run finishes in about 60–90 s. The current course is about 1:20.
+- [ ] A clean run finishes in about 45–60 s. The current course is about 0:54.
 
 **Pause and lifecycle**
 - [ ] Pause button, P or Esc: the pause menu appears (Resume / Restart / How to play / Sound / Main menu). The timer and music stop.
@@ -362,6 +362,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - **Colours:** characters, UI, text and boxes use only the official palette (`PALETTE`). The daytime sky, skyline and grass use an approved background-only `SCENERY` palette.
 - **Scaling:** whole-number device-pixel scaling is used when it fills ≥ 88% of the screen. Otherwise the game fills the screen with pixelated scaling, since strict whole numbers left the game at about 75% size on many phones.
 - **Logo downscaling** averages pixels rather than using pure nearest-neighbour, because nearest-neighbour drops thin lettering. Colours are then snapped to each logo's palette, so the result is still hard-edged pixel art. Use `--resample nearest` to switch back.
+- **Spacing:** each gap is sized for the fastest speed the player could possibly have reached at that point (a clean run so far, capped). Speed only rises with clears, so anyone who has been hit is slower and gets *more* time. This keeps a perfect run in the 45–60 s target while every gap still guarantees `reactionGap` seconds.
 - **Floating boxes hang from a cable** so they can only be ducked, never jumped over.
 - **Swipe down on the ground** briefly starts a hop, because jump fires instantly on touch. It then slams back down and ducks within about 20 ms.
 - **Placeholder schedule:** the 2026 Chicago Fire regular season, from the MLS stats API, matching the club's schedule release except Vancouver (moved). Two matches were changed after release: **Vancouver (match 27)** moved to Oct 6 because of wildfire smoke, and **Columbus (match 34)** moved venue to SeatGeek Stadium. Replace the whole file at release.

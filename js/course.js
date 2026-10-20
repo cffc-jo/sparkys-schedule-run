@@ -1,6 +1,6 @@
 // Deterministic course builder: one obstacle per match, in schedule order, then the finish.
 // Pure (no DOM) so it can be unit-tested. The same schedule + seed always gives the same layout.
-import { maxSpeed } from './speed.js';
+import { maxSpeed, currentSpeed } from './speed.js';
 
 // FNV-1a string hash -> 32-bit seed
 export function hashSeed(str) {
@@ -115,11 +115,15 @@ export function buildCourse(matches, GAME) {
     // Extra room tapers from full early in the season to 30% at the end.
     const taper = n > 1 ? 1 - 0.7 * (i / (n - 1)) : 1;
     const extra = course.extraSpacingMax * taper * (0.5 + 0.5 * rng());
-    ob.gapAfter = (recoverTime(type, physics) + course.reactionGap + extra) * vmax;
+    // Size the gap for the fastest the player can possibly be going here: after a clean run
+    // to this box (speed only rises with clears, and hits never speed you up), capped at vmax.
+    const vHere = Math.min(currentSpeed(i + 1, GAME.speed), vmax);
+    ob.vMax = vHere;
+    ob.gapAfter = (recoverTime(type, physics) + course.reactionGap + extra) * vHere;
     x += ob.w + ob.gapAfter;
   }
   const last = list[list.length - 1];
-  const finishX = last ? last.x + last.w + recoverTime(last.type, physics) * vmax + course.finishRunout : course.leadIn;
+  const finishX = last ? last.x + last.w + recoverTime(last.type, physics) * last.vMax + course.finishRunout : course.leadIn;
   return { obstacles: list, finishX, vmax, balls: placeBalls(list, GAME) };
 }
 

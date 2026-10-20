@@ -19,37 +19,38 @@ export const GAME = {
     groundY: 350,               // y of the running line (Sparky's feet)
     pitchDepth: 64,             // px of pitch visible between the LED boards and the running line.
                                 // Pitch (boards' foot to screen bottom) = height - groundY + pitchDepth ~= 1/3 of the screen
-    sparkyX: 46,                // Sparky's fixed screen x (centre of sprite)
+    sparkyX: 40,                // Sparky's fixed screen x (centre of sprite). Further left = more look-ahead
     crestSize: 44,              // club crest size on the title screen (logical px)
     titleBoardSpeed: 24,        // px/s the LED board text scrolls on the title screen
   },
 
   physics: {
-    gravity: 1500,              // px/s^2 downward
-    jumpVelocity: 450,          // first jump take-off speed (px/s). Apex = v^2 / 2g ~= 67px
-    doubleJumpVelocity: 450,    // second jump speed, applied mid-air (resets upward speed)
+    gravity: 2200,              // px/s^2 downward (snappy arcade jumps)
+    jumpVelocity: 545,          // first jump take-off speed (px/s). Apex = v^2 / 2g ~= 67.5px, airtime ~0.5s
+    doubleJumpVelocity: 545,    // second jump speed, applied mid-air (resets upward speed)
     maxDoubleJumps: 1,          // extra jumps allowed per airtime
     fastFallVelocity: 900,      // swipe-down in the air snaps fall speed to at least this (px/s)
-    duckDuration: 0.6,          // s Sparky stays crouched after a swipe down / S / Down
+    duckDuration: 0.45,         // s Sparky stays crouched after a swipe down / S / Down
     jumpBufferTime: 0.10,       // s a jump pressed just before landing (with no jumps left) is remembered
     hitStumbleTime: 0.35,       // s Sparky shows the stumble frame after a hit
   },
 
   speed: {
-    baseSpeed: 150,             // world scroll speed at the start (px/s)
-    boostPerClear: 0.008,       // speed = base * (1 + boostPerClear * boxesCleared)
-    maxSpeedMultiplier: 1.3,    // hard cap on that multiplier
+    baseSpeed: 190,             // world scroll speed at the start (px/s)
+    boostPerClear: 0.01,        // speed = base * (1 + boostPerClear * boxesCleared): +1% per clear
+    maxSpeedMultiplier: 1.35,   // hard cap on that multiplier
   },
 
   course: {
-    leadIn: 330,                // px of open ground before the first box
-    reactionGap: 1.0,           // s of open ground guaranteed between obstacles AT MAX SPEED
-    extraSpacingMax: 0.35,      // s of extra breathing room, largest early in the season, shrinking later
+    leadIn: 300,                // px of open ground before the first box
+    reactionGap: 0.8,           // s of open ground guaranteed between obstacles at the fastest speed
+                                // the player could have reached by that point (clean run, capped)
+    extraSpacingMax: 0.12,      // s of extra breathing room, largest early in the season, shrinking later
     seed: '',                   // course layout seed; blank = use the season string (same layout every run)
     easyStartCount: 6,          // first N boxes are always ground boxes
     typeMix: { ground: 0.60, floating: 0.25, tall: 0.15 }, // target obstacle mix
     noBackToBackHardUntil: 0.6, // fraction of the course where two hard boxes never appear in a row
-    finishRunout: 260,          // px from the last box to the finish line
+    finishRunout: 220,          // px from the last box to the finish line
   },
 
   obstacles: {
