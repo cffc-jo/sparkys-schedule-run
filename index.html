@@ -53,10 +53,26 @@
           </div>
         </section>
 
-        <!-- Phase 1 placeholder for gameplay -->
-        <section class="screen" data-screen="stub" hidden aria-label="Gameplay preview">
-          <div class="title-buttons">
-            <button class="btn btn-secondary" data-action="back">BACK</button>
+        <!-- Gameplay: everything is drawn on the canvas; taps anywhere jump -->
+        <section class="screen" data-screen="play" hidden aria-label="Game in progress"></section>
+
+        <!-- Pause menu -->
+        <section class="screen screen-dim" data-screen="pause" hidden>
+          <div class="panel menu-panel" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+            <h2 id="pause-title">PAUSED</h2>
+            <button class="btn btn-primary" data-action="resume">RESUME</button>
+            <button class="btn btn-secondary" data-action="restart">RESTART</button>
+            <button class="btn btn-secondary" data-action="help" aria-haspopup="dialog">HOW TO PLAY</button>
+            <button class="btn btn-secondary" data-action="mute" data-mute-label aria-pressed="false">SOUND: ON</button>
+            <button class="btn btn-secondary" data-action="quit">MAIN MENU</button>
+          </div>
+        </section>
+
+        <!-- Run complete (Phase 2 placeholder; the full finish + end screens come in Phases 3 and 5) -->
+        <section class="screen" data-screen="complete" hidden aria-label="Run complete">
+          <div class="complete-buttons">
+            <button class="btn btn-primary" data-action="restart">PLAY AGAIN</button>
+            <button class="btn btn-secondary" data-action="quit">MAIN MENU</button>
           </div>
         </section>
       </div>

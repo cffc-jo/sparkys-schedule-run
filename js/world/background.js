@@ -7,7 +7,9 @@ import { textSprite } from '../pixelText.js';
 const W = GAME.view.width;
 const H = GAME.view.height;
 const GROUND = GAME.world.groundY;
-const BOARD_TOP = GROUND - 18;
+const BOARD_H = 16;
+const BOARD_TOP = GROUND - 36 - BOARD_H; // boards sit behind a strip of pitch, so Sparky runs in front of them
+const PITCH_TOP = BOARD_TOP + BOARD_H;
 
 function makeCanvas(w, h) {
   const c = document.createElement('canvas');
@@ -169,33 +171,35 @@ function buildNearCity() {
   return c;
 }
 
-// Mowed grass tile. Drawn 2px above the ground line so blade tips poke up.
+// Mowed pitch tile from the foot of the boards to the bottom of the screen.
+// Sparky's running line (GROUND) is part-way down, so grass shows behind his legs.
 function buildGroundTile() {
   const tw = 32;
-  const th = H - GROUND + 2;
+  const th = H - PITCH_TOP;
+  const run = GROUND - PITCH_TOP; // running line, relative to the tile
   const c = makeCanvas(tw, th);
   const x = c.getContext('2d');
   for (let px = 0; px < tw; px++) {
     const stripe = px < 16 ? S.GRASS_A : S.GRASS_B;
-    if (px % 4 === 1) { x.fillStyle = S.GRASS_TIP; x.fillRect(px, 0, 1, 1); }
-    if (px % 2 === 0) { x.fillStyle = S.GRASS_TIP; x.fillRect(px, 1, 1, 1); }
-    x.fillStyle = S.GRASS_TIP;
-    x.fillRect(px, 2, 1, 1);
+    x.fillStyle = S.GRASS_DARK; // shadow under the boards
+    x.fillRect(px, 0, 1, 2);
     x.fillStyle = stripe;
-    x.fillRect(px, 3, 1, 3);
-    x.fillStyle = P.WHITE; // touchline
+    x.fillRect(px, 2, 1, run + 12);
+    x.fillStyle = P.WHITE; // far touchline
     x.fillRect(px, 6, 1, 1);
-    x.fillStyle = stripe;
-    x.fillRect(px, 7, 1, 23);
-    for (let y = 30; y < th; y++) {
-      const t = Math.min(1, (y - 30) / 16);
+    for (let y = run + 14; y < th; y++) {
+      const t = Math.min(1, (y - run - 14) / 14);
       x.fillStyle = ditherOn(px, y, t) ? S.GRASS_DEEP : S.GRASS_DARK;
       x.fillRect(px, y, 1, 1);
     }
   }
-  // A few darker tufts
-  x.fillStyle = S.GRASS_DARK;
-  for (const [tx, ty] of [[4, 12], [21, 18], [11, 25], [27, 9]]) x.fillRect(tx, ty, 1, 2);
+  // Grass tufts
+  x.fillStyle = S.GRASS_TIP;
+  for (const [tx, ty] of [[3, 14], [19, 22], [9, 30], [27, 11], [14, run + 6], [30, run + 2]]) {
+    x.fillRect(tx, ty, 1, 1);
+    x.fillRect(tx + 2, ty, 1, 1);
+    x.fillRect(tx + 1, ty - 1, 1, 1);
+  }
   return c;
 }
 
@@ -237,18 +241,18 @@ export function createBackground() {
 
       // Pitch-side LED boards
       ctx.fillStyle = P.RED;
-      ctx.fillRect(0, BOARD_TOP, W, GROUND - BOARD_TOP);
+      ctx.fillRect(0, BOARD_TOP, W, BOARD_H);
       ctx.fillStyle = P.DARK_RED;
       ctx.fillRect(0, BOARD_TOP, W, 2);
       ctx.fillStyle = P.FIRE_RED;
       ctx.fillRect(0, BOARD_TOP + 2, W, 1);
       const label = textSprite(BOARD_TEXT, P.WHITE, 8);
       const off = Math.floor(state.boardX % label.width);
-      for (let lx = -off; lx < W; lx += label.width) ctx.drawImage(label, lx, BOARD_TOP + 6);
+      for (let lx = -off; lx < W; lx += label.width) ctx.drawImage(label, lx, BOARD_TOP + 5);
 
       // Grass
       const gx = Math.floor(state.groundX);
-      for (let x = -gx; x < W; x += ground.width) ctx.drawImage(ground, x, GROUND - 2);
+      for (let x = -gx; x < W; x += ground.width) ctx.drawImage(ground, x, PITCH_TOP);
     },
 
     get groundY() { return GROUND; },

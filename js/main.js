@@ -16,8 +16,9 @@ import { createModal } from './ui/modal.js';
 import { audio } from './audio/audio.js';
 import { scheduleUrl } from './links.js';
 import { track } from './analytics.js';
+import { isDebug } from './debugFlag.js';
 import { createTitleScene } from './scenes/title.js';
-import { createStubScene } from './scenes/stub.js';
+import { createPlayScene } from './scenes/play.js';
 
 // ---- Palette → CSS custom properties (single source of truth) ----
 for (const [name, hex] of Object.entries(P)) {
@@ -54,6 +55,7 @@ const app = {
   },
 };
 reducedMotionQuery.addEventListener?.('change', (e) => { app.reducedMotion = e.matches; });
+if (isDebug()) window.__app = app; // console access for testing
 
 // ---- Loading screen ----
 let loadProgress = 0;
@@ -91,6 +93,7 @@ const loop = createLoop({
     else drawLoading();
   },
 });
+app.loop = loop;
 loop.start();
 
 // ---- Lifecycle: pause when the app/tab is hidden ----
@@ -127,6 +130,14 @@ async function boot() {
 
   app.assets = assets;
   app.schedule = assets.schedule;
+  if (!app.schedule || !Array.isArray(app.schedule.matches) || !app.schedule.matches.length) {
+    throw new Error('config/schedule.json has no matches');
+  }
+
+  // Opponent logos (optional: a missing logo shows the club abbreviation instead)
+  const logoPaths = [...new Set(app.schedule.matches.map((m) => m.logo).filter(Boolean))];
+  const logos = await loadAssets(logoPaths.map((src) => ({ key: src, type: 'image', src, optional: true })));
+  app.logos = logos;
   app.sheet = createSpriteSheet(assets.sparky || buildSparkySheet(SPARKY_SHEET), SPARKY_SHEET);
   app.crest = assets.crest ? pixelateImage(assets.crest, 44) : null;
   app.bg = createBackground();
@@ -146,8 +157,10 @@ async function boot() {
   app.modal = modal;
 
   app.ui = createUI(frame, {
-    play: () => app.go('stub'),
-    back: () => app.go('title'),
+    play: () => app.go('play'),
+    resume: () => app.scene.resume && app.scene.resume(),
+    restart: () => { track('play_again', { from: app.scene === app.scenes.play ? 'game' : 'menu' }); app.go('play'); },
+    quit: () => app.go('title'),
     schedule: (el) => track('schedule_click', { source: el.dataset.source }), // link opens natively
     help: () => modal.open(),
     'close-modal': () => modal.close(),
@@ -158,7 +171,11 @@ async function boot() {
   audio.onMuteChange((m) => app.ui.setMuted(m));
 
   app.scenes.title = createTitleScene(app);
-  app.scenes.stub = createStubScene(app);
+  app.scenes.play = createPlayScene(app);
+
+  // Phones turned to landscape show the rotate prompt; pause the run underneath it.
+  const landscape = window.matchMedia('(orientation: landscape) and (max-height: 500px) and (pointer: coarse)');
+  landscape.addEventListener?.('change', (e) => { if (e.matches && app.scene && app.scene.onHide) app.scene.onHide(); });
 
   // Short hold on 100% so the bar doesn't flash past
   await new Promise((r) => setTimeout(r, 200));

@@ -160,6 +160,44 @@ body {
   gap: calc(var(--u) * 12);
 }
 
+/* ---------- Pause menu / run complete ---------- */
+.screen-dim { background: rgba(22, 0, 8, 0.6); pointer-events: auto; }
+.menu-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(var(--u) * 190);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 10);
+  padding: calc(var(--u) * 14) calc(var(--u) * 12);
+  background: var(--c-deep-red);
+  box-shadow:
+    0 0 0 calc(var(--u) * 2) var(--c-dark-navy),
+    0 0 0 calc(var(--u) * 4) var(--c-white),
+    0 0 0 calc(var(--u) * 6) var(--c-dark-navy);
+}
+.menu-panel h2 {
+  margin: 0 0 calc(var(--u) * 4);
+  text-align: center;
+  font-size: calc(var(--u) * 16);
+  font-weight: normal;
+  text-shadow: calc(var(--u) * 2) calc(var(--u) * 2) 0 var(--c-dark-red);
+}
+.menu-panel .btn { font-size: calc(var(--u) * 9); }
+.menu-panel .btn-primary { font-size: calc(var(--u) * 12); }
+.complete-buttons {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--u) * 300);
+  transform: translateX(-50%);
+  width: calc(var(--u) * 170);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 12);
+}
+
 /* ---------- Instructions modal ---------- */
 .modal {
   position: absolute;

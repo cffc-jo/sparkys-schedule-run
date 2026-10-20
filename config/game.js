@@ -14,7 +14,7 @@ export const GAME = {
   },
 
   world: {
-    groundY: 420,               // y of the running surface (Sparky's feet)
+    groundY: 432,               // y of the running line (Sparky's feet); the boards sit behind it
     sparkyX: 52,                // Sparky's fixed screen x (centre of sprite)
     titleBoardSpeed: 24,        // px/s the LED board text scrolls on the title screen
   },
@@ -22,12 +22,12 @@ export const GAME = {
   physics: {
     gravity: 1500,              // px/s^2 downward
     jumpVelocity: 450,          // first jump take-off speed (px/s). Apex = v^2 / 2g ~= 67px
-    doubleJumpVelocity: 420,    // second jump speed, applied mid-air
+    doubleJumpVelocity: 450,    // second jump speed, applied mid-air (resets upward speed)
     maxDoubleJumps: 1,          // extra jumps allowed per airtime
-    fastFallVelocity: 650,      // swipe-down in the air snaps fall speed to at least this
+    fastFallVelocity: 900,      // swipe-down in the air snaps fall speed to at least this (px/s)
     duckDuration: 0.6,          // s Sparky stays crouched after a swipe down / S / Down
-    coyoteTime: 0.06,           // s after running off a ledge where a ground jump still counts
-    jumpBufferTime: 0.10,       // s a jump pressed just before landing is remembered
+    jumpBufferTime: 0.10,       // s a jump pressed just before landing (with no jumps left) is remembered
+    hitStumbleTime: 0.35,       // s Sparky shows the stumble frame after a hit
   },
 
   speed: {
@@ -39,17 +39,20 @@ export const GAME = {
   course: {
     leadIn: 330,                // px of open ground before the first box
     reactionGap: 1.0,           // s of open ground guaranteed between obstacles AT MAX SPEED
-    extraSpacingMax: 0.45,      // s of random extra spacing added on top (deterministic per seed)
+    extraSpacingMax: 0.35,      // s of extra breathing room, largest early in the season, shrinking later
+    seed: '',                   // course layout seed; blank = use the season string (same layout every run)
     easyStartCount: 6,          // first N boxes are always ground boxes
     typeMix: { ground: 0.60, floating: 0.25, tall: 0.15 }, // target obstacle mix
+    noBackToBackHardUntil: 0.6, // fraction of the course where two hard boxes never appear in a row
     finishRunout: 260,          // px from the last box to the finish line
   },
 
   obstacles: {
-    boxSize: 28,                // logo box outer size (px)
+    boxSize: 30,                // logo box outer size (px): 1px outline + 2px border + 24px logo
     logoSize: 24,               // pixel-logo size drawn inside the box
-    floatingBottom: 22,         // gap under a floating box (px above ground); Sparky ducks under it
-    tallCrateHeight: 40,        // plain crate under a "tall" logo box
+    floatingBottom: 20,         // gap under a floating box (px above ground). Must sit between the duck and stand hitbox heights.
+                                // Floating boxes hang from a cable, so jumping over them is impossible
+    tallCrateHeight: 44,        // plain crate under a "tall" logo box (total 74px > single-jump apex ~67px)
     hitboxInset: 3,             // collision boxes are shrunk by this on each side (forgiving)
     bobAmplitude: 2.5,          // idle bob height (px)
     bobSpeed: 2.4,              // idle bob speed (rad/s)
