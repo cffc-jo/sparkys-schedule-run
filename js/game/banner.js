@@ -5,7 +5,7 @@
 import { PALETTE as P } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { drawText, textWidth } from '../pixelText.js';
-import { formatMatchDate, isHome } from '../format.js';
+import { formatMatchDate, isHome, displayName } from '../format.js';
 
 const W = GAME.view.width;
 const PANEL = { x: 6, w: W - 12, h: 42, y: 60 }; // sits under the HUD and invincibility meter
@@ -52,7 +52,7 @@ export function createBanner() {
 
   return {
     show(match, art) {
-      const name = String(match.opponent || match.code || '').toUpperCase();
+      const name = displayName(match.opponent || match.code);
       cur = {
         match,
         art,

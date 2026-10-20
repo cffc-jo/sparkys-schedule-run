@@ -2,7 +2,7 @@
 // play again / view schedule / share. The panel is DOM (scrollable, accessible); the canvas
 // behind it keeps the stadium backdrop.
 import { formatTime } from '../timer.js';
-import { formatMatchDate, isHome } from '../format.js';
+import { formatMatchDate, isHome, displayName } from '../format.js';
 import { abbrevLines } from '../game/boxArt.js';
 
 export function createEndScene(app) {
@@ -36,7 +36,7 @@ export function createEndScene(app) {
       who.className = 'who';
       const name = document.createElement('span');
       name.className = 'name';
-      name.textContent = `VS. ${String(m.opponent).toUpperCase()}`;
+      name.textContent = `VS. ${displayName(m.opponent)}`;
       const date = document.createElement('span');
       date.className = 'date';
       date.textContent = formatMatchDate(m.date) || 'DATE TBD';

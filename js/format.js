@@ -13,6 +13,12 @@ export function formatMatchDate(date) {
   return `${DAYS[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
+// Opponent name for display: upper case with accents removed ("CF Montréal" -> "CF MONTREAL"),
+// so it always renders cleanly in the pixel font. schedule.json keeps the official spelling.
+export function displayName(name) {
+  return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+}
+
 export function isHome(match) {
   return String(match.homeAway).toUpperCase() === 'HOME';
 }
