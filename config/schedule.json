@@ -1,0 +1,6 @@
+{
+  "season": "2027-28",
+  "matches": [
+    { "matchNumber": 1, "opponent": "Inter Miami CF", "code": "MIA", "logo": "assets/logos/MIA.png", "homeAway": "HOME", "date": "TBD" }
+  ]
+}

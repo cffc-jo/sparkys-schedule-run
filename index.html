@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Sparky's Schedule Run | Chicago Fire FC</title>
+  <meta name="description" content="Run the season with Sparky and reveal every Chicago Fire FC opponent on the 2027-28 schedule.">
+  <meta name="theme-color" content="#171A45">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Open Graph / Twitter. Replace the image URL with the absolute GitHub Pages URL before launch. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sparky's Schedule Run">
+  <meta property="og:description" content="Run the season with Sparky and reveal every Chicago Fire FC opponent.">
+  <meta property="og:image" content="assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sparky's Schedule Run">
+  <meta name="twitter:description" content="Run the season with Sparky and reveal every Chicago Fire FC opponent.">
+  <meta name="twitter:image" content="assets/og-image.png">
+
+  <link rel="icon" href="assets/crest.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/PressStart2P-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="stage">
+    <div id="frame">
+      <canvas id="game" width="270" height="480" aria-hidden="true"></canvas>
+
+      <div id="ui">
+        <!-- Corner controls: visible on every screen -->
+        <div class="corner" role="toolbar" aria-label="Game controls">
+          <button class="icon-btn" data-action="pause" aria-label="Pause" hidden>
+            <svg viewBox="0 0 8 8" aria-hidden="true"><rect x="1" y="1" width="2" height="6"/><rect x="5" y="1" width="2" height="6"/></svg>
+          </button>
+          <button class="icon-btn" data-action="help" aria-label="How to play" aria-haspopup="dialog">
+            <svg viewBox="0 0 8 8" aria-hidden="true"><path d="M2 0h4v1h-4zM1 1h2v1h-2zM5 1h2v2h-2zM4 3h2v1h-2zM3 4h2v1h-2zM3 6h2v2h-2z"/></svg>
+          </button>
+          <button class="icon-btn" data-action="mute" aria-label="Mute sound" aria-pressed="false">
+            <svg class="ico-sound" viewBox="0 0 8 8" aria-hidden="true"><path d="M0 3h2v2h-2zM2 2h1v4h-1zM3 1h1v6h-1zM5 3h1v2h-1zM6 1h1v1h-1zM7 2h1v4h-1zM6 6h1v1h-1z"/></svg>
+            <svg class="ico-muted" viewBox="0 0 8 8" aria-hidden="true"><path d="M0 3h2v2h-2zM2 2h1v4h-1zM3 1h1v6h-1zM5 2h1v1h-1zM7 2h1v1h-1zM6 3h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1z"/></svg>
+          </button>
+        </div>
+
+        <!-- Title screen -->
+        <section class="screen" data-screen="title" hidden aria-label="Title screen">
+          <h1 class="sr-only">Sparky's Schedule Run</h1>
+          <div class="title-buttons">
+            <button class="btn btn-primary" data-action="play">PLAY</button>
+            <a class="btn btn-secondary" data-action="schedule" data-source="title" target="_blank" rel="noopener">VIEW SCHEDULE</a>
+          </div>
+        </section>
+
+        <!-- Phase 1 placeholder for gameplay -->
+        <section class="screen" data-screen="stub" hidden aria-label="Gameplay preview">
+          <div class="title-buttons">
+            <button class="btn btn-secondary" data-action="back">BACK</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- Instructions modal -->
+      <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="panel">
+          <button class="icon-btn modal-close" data-action="close-modal" aria-label="Close instructions">
+            <svg viewBox="0 0 8 8" aria-hidden="true"><path d="M1 1h1v1h-1zM2 2h1v1h-1zM3 3h2v2h-2zM5 2h1v1h-1zM6 1h1v1h-1zM2 5h1v1h-1zM1 6h1v1h-1zM5 5h1v1h-1zM6 6h1v1h-1z"/></svg>
+          </button>
+          <h2 id="modal-title">HOW TO PLAY</h2>
+          <div class="modal-body scrollable" tabindex="0">
+            <h3>GOAL</h3>
+            <p>Run the full season and reveal every opponent in the fastest time.</p>
+
+            <h3>CONTROLS</h3>
+            <h4>PHONE</h4>
+            <ul class="controls">
+              <li><b>TAP</b> or <b>SWIPE UP</b> to jump</li>
+              <li><b>TAP AGAIN</b> in the air to double-jump</li>
+              <li><b>SWIPE DOWN</b> to duck</li>
+            </ul>
+            <h4>KEYBOARD</h4>
+            <ul class="controls">
+              <li><kbd>SPACE</kbd> <kbd>W</kbd> <kbd>&uarr;</kbd> jump<br>(again in the air to double-jump)</li>
+              <li><kbd>S</kbd> <kbd>&darr;</kbd> duck</li>
+              <li><kbd>P</kbd> <kbd>ESC</kbd> pause</li>
+            </ul>
+
+            <h3>KEY</h3>
+            <ul class="key">
+              <li><img data-icon="ball" alt=""><span>Soccer ball = <b data-bind="invincibilitySeconds"></b> seconds of invincibility</span></li>
+              <li><img data-icon="hit" alt=""><span>Hitting a box = <b>+<span data-bind="penaltySeconds"></span> second</b> penalty</span></li>
+              <li><img data-icon="clear" alt=""><span>Clearing a box = a small speed boost</span></li>
+            </ul>
+            <p class="note">You always finish the run. Penalties only add time.</p>
+          </div>
+          <button class="btn btn-primary" data-action="close-modal">GOT IT!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Landscape-on-phone prompt -->
+  <div id="rotate" aria-live="polite">
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M5 1h6v14h-6zM6 3h4v9h-4zM7 13h2v1h-2z"/></svg>
+    <p>ROTATE YOUR PHONE</p>
+  </div>
+
+  <noscript><p style="color:#fff;text-align:center">Sparky's Schedule Run needs JavaScript.</p></noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

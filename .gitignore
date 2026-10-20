@@ -1,0 +1,10 @@
+# Reference photos (watermarked stock / costume refs) — never publish
+/reference/
+
+# Dev tooling
+node_modules/
+.claude/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
