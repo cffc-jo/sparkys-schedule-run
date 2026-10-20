@@ -15,6 +15,7 @@ import { buildCourse } from '../course.js';
 import { createInput } from '../input/input.js';
 import { track } from '../analytics.js';
 import { isDebug } from '../debugFlag.js';
+import { recordRun } from '../best.js';
 
 const W = GAME.view.width;
 const GROUND = GAME.world.groundY;
@@ -211,7 +212,8 @@ export function createPlayScene(app) {
     invT = 0;
     timer.stop();
     result = timer.result();
-    app.lastResult = result;
+    app.lastResult = result;          // one result object: { finalTimeMs, rawTimeMs, penalties, penaltyMs }
+    app.lastBest = recordRun(result); // personal best on this device
     app.ui.setPauseVisible(false);
     track('game_complete', { finalTimeMs: result.finalTimeMs, rawTimeMs: result.rawTimeMs, penalties: result.penalties });
     app.audio.music(null);
@@ -335,7 +337,9 @@ export function createPlayScene(app) {
         if (celebrateT >= GAME.ui.celebrateSeconds) {
           phase = 'done';
           app.audio.music('title');
-          app.ui.showScreen('complete', { focus: false });
+          const summary = document.querySelector('[data-bind-text="finish-summary"]');
+          if (summary) summary.textContent = `Finish! Run time ${formatTime(result.rawTimeMs)}, ${result.penalties} penalties, final time ${formatTime(result.finalTimeMs)}.`;
+          app.ui.showScreen('finish', { focus: true });
         }
       }
 

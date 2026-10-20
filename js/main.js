@@ -19,6 +19,9 @@ import { track } from './analytics.js';
 import { isDebug } from './debugFlag.js';
 import { createTitleScene } from './scenes/title.js';
 import { createPlayScene } from './scenes/play.js';
+import { createEndScene } from './scenes/end.js';
+import { isEnabled as leaderboardEnabled } from './leaderboard.js';
+import { shareResult } from './share.js';
 
 // ---- Palette → CSS custom properties (single source of truth) ----
 for (const [name, hex] of Object.entries(P)) {
@@ -119,6 +122,24 @@ const unlock = () => {
 };
 UNLOCK_EVENTS.forEach((ev) => window.addEventListener(ev, unlock, true));
 
+// ---- After the finish screen: (future) initials + leaderboard, then the end screen ----
+function afterFinish() {
+  if (GAME.flags.LEADERBOARD_ENABLED && leaderboardEnabled()) {
+    // Future: app.go('initials') -> submitScore(app.lastResult + initials) -> end screen.
+  }
+  app.go('end');
+}
+
+let toastTimer = 0;
+function toast(message) {
+  const el = frame.querySelector('[data-toast]');
+  if (!el) return;
+  el.textContent = message;
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
+}
+
 // ---- Boot ----
 async function boot() {
   // Font first so the loading text is in the right face
@@ -162,8 +183,16 @@ async function boot() {
 
   app.ui = createUI(frame, {
     play: () => app.go('play'),
+    continue: () => afterFinish(),
+    'play-again': () => { track('play_again'); app.go('play'); },
+    share: async () => {
+      track('share_click', { finalTimeMs: app.lastResult && app.lastResult.finalTimeMs });
+      const outcome = await shareResult(app.lastResult ? app.lastResult.finalTimeMs : 0);
+      if (outcome === 'copied') toast('LINK COPIED!');
+      else if (outcome === 'manual') toast('COPY THE PAGE LINK TO SHARE');
+    },
     resume: () => app.scene.resume && app.scene.resume(),
-    restart: () => { track('play_again', { from: app.scene === app.scenes.play ? 'game' : 'menu' }); app.go('play'); },
+    restart: () => app.go('play'),
     quit: () => app.go('title'),
     schedule: (el) => track('schedule_click', { source: el.dataset.source }), // link opens natively
     help: () => modal.open(),
@@ -178,6 +207,8 @@ async function boot() {
 
   app.scenes.title = createTitleScene(app);
   app.scenes.play = createPlayScene(app);
+  app.scenes.end = createEndScene(app);
+  frame.querySelectorAll('[data-bind-text="season"]').forEach((el) => { el.textContent = app.schedule.season; });
 
   // Phones turned to landscape show the rotate prompt; pause the run underneath it.
   const landscape = window.matchMedia('(orientation: landscape) and (max-height: 500px) and (pointer: coarse)');

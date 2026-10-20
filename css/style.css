@@ -198,6 +198,134 @@ body {
   gap: calc(var(--u) * 12);
 }
 
+/* ---------- End screen ---------- */
+.end-panel {
+  position: absolute;
+  top: calc(var(--u) * 42);
+  left: calc(var(--u) * 6);
+  right: calc(var(--u) * 6);
+  bottom: calc(var(--u) * 6);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 8);
+  background: var(--c-deep-red);
+  pointer-events: auto;
+  box-shadow:
+    0 0 0 calc(var(--u) * 1) var(--c-dark-navy),
+    0 0 0 calc(var(--u) * 3) var(--c-white),
+    0 0 0 calc(var(--u) * 4) var(--c-dark-navy);
+}
+.end-panel h2 {
+  margin: 0;
+  text-align: center;
+  font-size: calc(var(--u) * 11);
+  font-weight: normal;
+  letter-spacing: calc(var(--u) * 1);
+}
+.end-time {
+  padding: calc(var(--u) * 6);
+  background: var(--c-dark-red);
+  text-align: center;
+  letter-spacing: calc(var(--u) * 1);
+}
+.end-final { display: grid; justify-items: center; gap: calc(var(--u) * 3); }
+.end-final .label { font-size: calc(var(--u) * 7); color: var(--c-flag-blue); }
+.end-final strong { font-weight: normal; font-size: calc(var(--u) * 22); line-height: 1.1; }
+.new-best {
+  padding: calc(var(--u) * 2) calc(var(--u) * 4);
+  font-size: calc(var(--u) * 8);
+  background: var(--c-fire-red);
+  color: var(--c-white);
+  box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy);
+  animation: new-best 0.5s steps(2) infinite;
+}
+@keyframes new-best { 0% { background: var(--c-fire-red); } 100% { background: var(--c-white); color: var(--c-red); } }
+.end-row-text {
+  display: flex;
+  justify-content: space-between;
+  margin: calc(var(--u) * 4) 0 0;
+  font-size: calc(var(--u) * 7);
+}
+.end-row-text:first-of-type { margin-top: calc(var(--u) * 7); }
+.end-best { color: var(--c-flag-blue); }
+
+.leaderboard-slot { min-height: calc(var(--u) * 40); }
+
+.end-list-title {
+  margin: 0;
+  font-size: calc(var(--u) * 8);
+  font-weight: normal;
+  color: var(--c-flag-blue);
+  letter-spacing: calc(var(--u) * 1);
+}
+.opponents {
+  flex: 1;
+  min-height: calc(var(--u) * 60);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+  background: var(--c-dark-red);
+  box-shadow: inset 0 0 0 calc(var(--u) * 1) var(--c-dark-navy);
+  scrollbar-color: var(--c-white) var(--c-dark-red);
+}
+.opponents:focus-visible { outline: calc(var(--u) * 1) solid var(--c-flag-blue); }
+.opponents li {
+  display: grid;
+  grid-template-columns: calc(var(--u) * 18) calc(var(--u) * 24) 1fr auto;
+  align-items: center;
+  column-gap: calc(var(--u) * 5);
+  padding: calc(var(--u) * 4) calc(var(--u) * 5);
+  font-size: calc(var(--u) * 7);
+  line-height: 1.5;
+  letter-spacing: calc(var(--u) * 1);
+}
+.opponents li + li { border-top: calc(var(--u) * 1) solid var(--c-deep-red); }
+.opponents .num { color: var(--c-flag-blue); text-align: right; }
+.opponents .logo {
+  width: calc(var(--u) * 24);
+  height: calc(var(--u) * 24);
+  display: grid;
+  place-items: center;
+  background: var(--c-white);
+  color: var(--c-navy);
+  font-size: calc(var(--u) * 6);
+  image-rendering: pixelated;
+}
+.opponents .logo img { width: 100%; height: 100%; image-rendering: pixelated; }
+.opponents .who { display: grid; min-width: 0; }
+.opponents .who .name { overflow-wrap: anywhere; }
+.opponents .who .date { color: var(--c-flag-blue); }
+.opponents .tag { padding: 0 calc(var(--u) * 2); box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy); }
+.opponents .tag.home { background: var(--c-fire-red); color: var(--c-white); }
+.opponents .tag.away { background: var(--c-flag-blue); color: var(--c-navy); }
+
+.end-buttons { display: grid; gap: calc(var(--u) * 7); }
+.end-row { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 7); }
+.end-row .btn { font-size: calc(var(--u) * 7); padding-left: calc(var(--u) * 3); padding-right: calc(var(--u) * 3); }
+.end-panel .btn-primary { font-size: calc(var(--u) * 12); }
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * 92);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: calc(var(--u) * 4) calc(var(--u) * 6);
+  font-size: calc(var(--u) * 7);
+  white-space: nowrap;
+  background: var(--c-dark-navy);
+  color: var(--c-white);
+  box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .new-best { animation: none; }
+}
+
 /* ---------- Instructions modal ---------- */
 .modal {
   position: absolute;

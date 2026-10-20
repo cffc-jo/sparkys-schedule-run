@@ -68,11 +68,48 @@
           </div>
         </section>
 
-        <!-- Run complete (Phase 2 placeholder; the full finish + end screens come in Phases 3 and 5) -->
-        <section class="screen" data-screen="complete" hidden aria-label="Run complete">
+        <!-- Finish: time breakdown is drawn on the canvas; this just adds the continue button -->
+        <section class="screen" data-screen="finish" hidden aria-label="Run complete">
+          <p class="sr-only" aria-live="polite" data-bind-text="finish-summary"></p>
           <div class="complete-buttons">
-            <button class="btn btn-primary" data-action="restart">PLAY AGAIN</button>
-            <button class="btn btn-secondary" data-action="quit">MAIN MENU</button>
+            <button class="btn btn-primary" data-action="continue">CONTINUE</button>
+          </div>
+        </section>
+
+        <!-- End screen -->
+        <section class="screen" data-screen="end" hidden aria-labelledby="end-title">
+          <div class="end-panel panel">
+            <h2 id="end-title">THANKS FOR PLAYING!</h2>
+
+            <div class="end-time">
+              <div class="end-final">
+                <span class="label">FINAL TIME</span>
+                <strong data-end="final">0:00.0</strong>
+                <span class="new-best" data-end="newBest" hidden>NEW BEST!</span>
+              </div>
+              <p class="end-row-text"><span>RUN TIME</span><span data-end="raw"></span></p>
+              <p class="end-row-text"><span>PENALTIES <span data-end="penCount"></span></span><span data-end="penTime"></span></p>
+              <p class="end-row-text end-best"><span>PERSONAL BEST</span><span data-end="best"></span></p>
+            </div>
+
+            <!-- ============================================================
+                 LEADERBOARD SLOT (future). Empty and hidden while
+                 GAME.flags.LEADERBOARD_ENABLED is false. js/leaderboard.js
+                 will fill it with the top 10 and "You'd be Nth".
+                 ============================================================ -->
+            <div class="leaderboard-slot" data-leaderboard hidden></div>
+
+            <h3 class="end-list-title" id="opponents-title">YOUR <span data-bind-text="season"></span> OPPONENTS</h3>
+            <ol class="opponents scrollable" tabindex="0" aria-labelledby="opponents-title" data-opponents></ol>
+
+            <div class="end-buttons">
+              <button class="btn btn-primary" data-action="play-again">PLAY AGAIN</button>
+              <div class="end-row">
+                <a class="btn btn-secondary" data-action="schedule" data-source="end" target="_blank" rel="noopener">VIEW SCHEDULE</a>
+                <button class="btn btn-secondary" data-action="share">SHARE</button>
+              </div>
+            </div>
+            <p class="toast" role="status" aria-live="polite" data-toast hidden></p>
           </div>
         </section>
       </div>
