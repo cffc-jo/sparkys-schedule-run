@@ -335,7 +335,7 @@ export function createPlayScene(app) {
     },
 
     renderComplete(ctx) {
-      const x = 25, y = 120, w = 220, h = 160;
+      const x = 25, y = 116, w = 220, h = 168;
       ctx.fillStyle = P.DARK_NAVY;
       ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
       ctx.fillStyle = P.WHITE;
@@ -353,7 +353,7 @@ export function createPlayScene(app) {
       ctx.fillRect(x + 12, y + 84, w - 24, 1);
       drawText(ctx, 'FINAL TIME', W / 2, y + 96, { align: 'center', color: P.FLAG_BLUE });
       drawText(ctx, formatTime(result.finalTimeMs), W / 2, y + 112, { size: 24, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
-      drawText(ctx, `BOXES CLEARED ${cleared}/${total}`, W / 2, y + 143, { align: 'center', color: P.WHITE });
+      drawText(ctx, `BOXES CLEARED ${cleared}/${total}`, W / 2, y + 150, { align: 'center', color: P.WHITE });
     },
   };
 }

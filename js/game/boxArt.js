@@ -60,7 +60,7 @@ export function logoBox(match, logoImg, size, logoSize) {
     const lh = 9;
     const top = inset + Math.round((logoSize - lines.length * lh) / 2) + 1;
     lines.forEach((line, i) => {
-      const t = textSprite(line, P.NAVY, 8);
+      const t = textSprite(line, P.NAVY, 8, 0); // no extra spacing: 3 letters fill the 24px panel
       x.drawImage(t, Math.round(inset + (logoSize - t.width) / 2), top + i * lh);
     });
   }
