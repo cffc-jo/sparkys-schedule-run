@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logo contact sheet | Sparky's Schedule Run</title>
+  <style>
+    :root { --bg: #f4f1ec; --ink: #160008; --muted: #5b5560; --line: #d8d2c8; --red: #AA0000; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; font: 14px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--ink); }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    p { margin: 0 0 12px; color: var(--muted); max-width: 70ch; }
+    .bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 16px 0 20px; }
+    button, label { font: inherit; }
+    button { padding: 8px 14px; border: 0; border-radius: 0; background: var(--red); color: #fff; cursor: pointer; }
+    button.secondary { background: #fff; color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; }
+    .card { background: #fff; border: 1px solid var(--line); padding: 12px; }
+    .card h2 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; }
+    .card h2 small { color: var(--muted); font-weight: normal; font-size: 12px; }
+    .row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .cell { display: grid; gap: 4px; justify-items: center; font-size: 11px; color: var(--muted); }
+    .checker { background: repeating-conic-gradient(#e6e1d9 0 25%, #fff 0 50%) 0 0 / 8px 8px; display: grid; place-items: center; }
+    .orig { width: 72px; height: 72px; object-fit: contain; }
+    canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+    .swatches { display: flex; gap: 2px; margin-top: 8px; }
+    .swatches span { width: 12px; height: 12px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+    .missing { color: var(--red); }
+    .boxes { margin-top: 8px; display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Logo contact sheet</h1>
+  <p>Each club's original logo (from <code>assets/logos-source/</code>) next to its 8-bit version at 1×, 2× and 4×, plus how it sits in a HOME and AWAY box. Pixel versions are generated here in the browser with the same code as <code>tools/pixelate-logos.js</code>, so this page also works without Node.</p>
+  <p><strong>Brand/legal:</strong> these are stylised renderings of other clubs' marks. Get them approved before launch.</p>
+  <div class="bar">
+    <label>Size <input id="size" type="number" min="12" max="48" value="24" style="width:4em"></label>
+    <label>Colours <input id="colors" type="number" min="2" max="16" value="10" style="width:4em"></label>
+    <label><input id="outline" type="checkbox" checked> Outline</label>
+    <label>Resample <select id="resample"><option value="area">area (keeps detail)</option><option value="nearest">nearest</option></select></label>
+    <button id="regen" class="secondary">Regenerate</button>
+    <button id="dlall">Download all PNGs</button>
+    <span id="status"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+
+  <script type="module">
+    import { pixelateLogo } from './pixelate-core.js';
+    import { logoBox } from '../js/game/boxArt.js';
+
+    const CODES = ['ATL','ATX','CHI','CIN','CLB','CLB_2','CLT','COL','DAL','DC','HOU','LAFC','LAG','MIA','MNUFC','MTL','NE','NSH','NYC','NYR','ORL','PHI','POR','RSL','SDFC','SEA','SJ','SKC','STL','TOR','VAN'];
+    const grid = document.getElementById('grid');
+    const status = document.getElementById('status');
+    const results = new Map();
+
+    function loadImage(src) {
+      return new Promise((resolve) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => resolve(null);
+        i.src = src;
+      });
+    }
+
+    function toRgba(img) {
+      const c = document.createElement('canvas');
+      const vector = /\.svg$/i.test(img.src);
+      c.width = vector ? 600 : img.naturalWidth || 512;   // rasterise SVGs large so they downscale cleanly
+      c.height = vector ? 600 : img.naturalHeight || 512;
+      const x = c.getContext('2d');
+      x.drawImage(img, 0, 0, c.width, c.height);
+      return x.getImageData(0, 0, c.width, c.height);
+    }
+
+    function toCanvas(rgba, scale) {
+      const base = document.createElement('canvas');
+      base.width = rgba.width; base.height = rgba.height;
+      base.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba.data), rgba.width, rgba.height), 0, 0);
+      if (scale === 1) return base;
+      const c = document.createElement('canvas');
+      c.width = rgba.width * scale; c.height = rgba.height * scale;
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = false;
+      x.drawImage(base, 0, 0, c.width, c.height);
+      return c;
+    }
+
+    function cell(label, el) {
+      const d = document.createElement('div');
+      d.className = 'cell';
+      const box = document.createElement('div');
+      box.className = 'checker';
+      box.style.padding = '4px';
+      box.append(el);
+      d.append(box, label);
+      return d;
+    }
+
+    async function render() {
+      const opts = {
+        size: +document.getElementById('size').value,
+        colors: +document.getElementById('colors').value,
+        outline: document.getElementById('outline').checked,
+        resample: document.getElementById('resample').value,
+      };
+      grid.textContent = '';
+      results.clear();
+      let found = 0;
+      // Include the SVG crest as a test entry so the pipeline can be checked before logos arrive.
+      const entries = [...CODES.map((c) => ({ code: c, src: `../assets/logos-source/${c}@3x.png` })), { code: 'CREST (test)', src: '../assets/crest.svg' }];
+      for (const { code, src } of entries) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const h = document.createElement('h2');
+        h.textContent = code;
+        card.append(h);
+        grid.append(card);
+        const img = await loadImage(src);
+        if (!img) {
+          const p = document.createElement('div');
+          p.className = 'missing';
+          p.textContent = `Missing: ${src.replace('../', '')}`;
+          card.append(p);
+          continue;
+        }
+        found++;
+        const size = code === 'CHI' ? 44 : opts.size;
+        const { image, palette } = pixelateLogo(toRgba(img), { ...opts, size, colors: code === 'CHI' ? Math.max(12, opts.colors) : opts.colors });
+        results.set(code, image);
+        const small = document.createElement('small');
+        small.textContent = `${img.naturalWidth}×${img.naturalHeight} → ${size}×${size}, ${palette.length} colours`;
+        h.append(small);
+        const orig = img.cloneNode();
+        orig.className = 'orig';
+        const row = document.createElement('div');
+        row.className = 'row';
+        row.append(cell('original', orig), cell('1×', toCanvas(image, 1)), cell('2×', toCanvas(image, 2)), cell('4×', toCanvas(image, 4)));
+        card.append(row);
+        const sw = document.createElement('div');
+        sw.className = 'swatches';
+        for (const p of palette) { const s = document.createElement('span'); s.style.background = `rgb(${p.join(',')})`; sw.append(s); }
+        card.append(sw);
+        if (code !== 'CHI' && !code.startsWith('CREST')) {
+          const boxes = document.createElement('div');
+          boxes.className = 'boxes';
+          const logo = toCanvas(image, 1);
+          for (const homeAway of ['HOME', 'AWAY']) {
+            const b = logoBox({ code: code + homeAway, homeAway }, logo, 30, 24);
+            const big = document.createElement('canvas');
+            big.width = 90; big.height = 90;
+            const x = big.getContext('2d');
+            x.imageSmoothingEnabled = false;
+            x.drawImage(b, 0, 0, 90, 90);
+            boxes.append(cell(homeAway + ' box (3×)', big));
+          }
+          card.append(boxes);
+        }
+      }
+      status.textContent = `${found - 1} of ${CODES.length} source logos found`;
+    }
+
+    document.getElementById('regen').onclick = render;
+    document.getElementById('dlall').onclick = async () => {
+      for (const [code, image] of results) {
+        if (code.startsWith('CREST')) continue;
+        const a = document.createElement('a');
+        a.download = `${code}.png`;
+        a.href = toCanvas(image, 1).toDataURL('image/png');
+        a.click();
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      status.textContent = 'Downloaded. Move the files into assets/logos/.';
+    };
+    render();
+  </script>
+</body>
+</html>

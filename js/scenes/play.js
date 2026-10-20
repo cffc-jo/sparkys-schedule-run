@@ -1,4 +1,4 @@
-// The run: countdown → running → complete. Pausable at any point before completion.
+// The run: countdown → running → celebrate/complete. Pausable at any point before the finish.
 import { GAME } from '../../config/game.js';
 import { PALETTE as P, SCENERY } from '../../config/palette.js';
 import { SPARKY_SHEET } from '../../config/sprites.js';
@@ -6,6 +6,9 @@ import { drawText } from '../pixelText.js';
 import { createAnimator } from '../sprite.js';
 import { createSparky } from '../game/sparky.js';
 import { logoBox, crate } from '../game/boxArt.js';
+import { createParticles } from '../game/particles.js';
+import { createBanner } from '../game/banner.js';
+import { ballFrames } from '../art/ballArt.js';
 import { createTimer, formatTime } from '../timer.js';
 import { currentSpeed } from '../speed.js';
 import { buildCourse } from '../course.js';
@@ -17,6 +20,10 @@ const W = GAME.view.width;
 const GROUND = GAME.world.groundY;
 const SX = GAME.world.sparkyX;
 const OB = GAME.obstacles;
+const BALL = GAME.balls;
+const GOAL_W = 30;      // goal mouth width at the finish
+const GOAL_H = 56;      // crossbar height
+const GLOW = [P.FIRE_RED, P.FLAG_BLUE, P.RED, P.BLUE];
 
 function vibrate(ms) {
   try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* unsupported (iOS) */ }
@@ -34,15 +41,26 @@ function overlaps(a, b) {
   return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
 }
 
+// Circle (ball) vs box (Sparky), both in world coordinates.
+function circleHitsBox(cx, cy, r, b) {
+  const nx = Math.max(b.x0, Math.min(cx, b.x1));
+  const ny = Math.max(b.y0, Math.min(cy, b.y1));
+  return (cx - nx) ** 2 + (cy - ny) ** 2 <= r * r;
+}
+
 export function createPlayScene(app) {
   const sparky = createSparky(GAME.physics, SPARKY_SHEET.hitbox);
   const anim = createAnimator(SPARKY_SHEET);
   const timer = createTimer(GAME.penalties.penaltySeconds);
   const course = buildCourse(app.schedule.matches, GAME);
   const total = course.obstacles.length;
+  const particles = createParticles();
+  const banner = createBanner();
+  const balls = ballFrames();
   const debug = isDebug();
+  const sfx = (name) => { if (app.audio && app.audio.play) app.audio.play(name); };
 
-  let phase = 'countdown'; // 'countdown' | 'run' | 'done'
+  let phase = 'countdown'; // 'countdown' | 'run' | 'celebrate' | 'done'
   let paused = false;
   let countT = 0;
   let t = 0;
@@ -51,23 +69,30 @@ export function createPlayScene(app) {
   let cleared = 0;
   let grace = 0;
   let shake = 0;
-  let boxes = [];   // per-obstacle runtime state
+  let invT = 0;        // invincibility time left
+  let celebrateT = 0;
+  let confettiT = 0;
+  let boxes = [];      // per-obstacle runtime state
+  let ballState = [];  // per-ball runtime state
   let popups = [];
   let debris = [];
   let result = null;
 
   const input = createInput(app.renderer.canvas.parentElement, {
     jump() {
-      if (phase === 'run' && !paused) sparky.jump();
+      if (phase !== 'run' || paused) return;
+      const r = sparky.jump();
+      if (r) sfx(r === 'double' ? 'doubleJump' : 'jump');
     },
     duck() {
-      if (phase === 'run' && !paused) sparky.duck();
+      if (phase !== 'run' || paused) return;
+      if (sparky.duck()) sfx('duck');
     },
     pause() {
-      if (phase !== 'done') togglePause();
+      if (phase === 'countdown' || phase === 'run') togglePause();
     },
     menuOpen() {
-      return paused || phase === 'done';
+      return paused || phase === 'celebrate' || phase === 'done';
     },
   });
 
@@ -81,21 +106,28 @@ export function createPlayScene(app) {
     speed = currentSpeed(0, GAME.speed);
     grace = 0;
     shake = 0;
+    invT = 0;
+    celebrateT = 0;
+    confettiT = 0;
     popups = [];
     debris = [];
     result = null;
+    particles.clear();
+    banner.clear();
     sparky.reset();
     timer.reset();
     boxes = course.obstacles.map((ob) => ({
       ob,
       state: 'pending', // 'pending' | 'cleared' | 'hit'
+      shattered: false,
       phase: ob.index * 1.7,
       art: logoBox(ob.match, app.logos[ob.match.logo] || null, OB.boxSize, OB.logoSize),
     }));
+    ballState = course.balls.map((b, i) => ({ ...b, got: false, phase: i * 2.3 }));
   }
 
   function pause() {
-    if (paused || phase === 'done') return;
+    if (paused || (phase !== 'countdown' && phase !== 'run')) return;
     paused = true;
     timer.stop();
     app.ui.showScreen('pause', { focus: true });
@@ -116,57 +148,127 @@ export function createPlayScene(app) {
     else pause();
   }
 
+  function boxBase(ob) {
+    return ob.type === 'tall' ? OB.tallCrateHeight : ob.type === 'floating' ? OB.floatingBottom : 0;
+  }
+
+  // Every box reveals its match, whether cleared, shattered or hit.
+  function reveal(b) {
+    banner.show(b.ob.match, b.art);
+  }
+
+  function clearBox(b) {
+    b.state = 'cleared';
+    cleared++;
+    speed = currentSpeed(cleared, GAME.speed);
+    reveal(b);
+    sfx('clear');
+  }
+
+  function shatterBox(b) {
+    b.shattered = true;
+    const cx = b.ob.x - dist + SX + OB.boxSize / 2;
+    const cy = GROUND - boxBase(b.ob) - OB.boxSize / 2;
+    const home = String(b.ob.match.homeAway).toUpperCase() === 'HOME';
+    particles.burst(cx, cy, { count: 18, colors: [home ? P.RED : P.FLAG_BLUE, P.WHITE, P.DARK_NAVY, P.FIRE_RED], speed: 160, up: 80, size: 3 });
+    clearBox(b);
+    vibrate(20);
+  }
+
   function hitBox(b, penalize) {
     b.state = 'hit';
-    const base = b.ob.type === 'tall' ? OB.tallCrateHeight : b.ob.type === 'floating' ? OB.floatingBottom : 0;
-    debris.push({ img: b.art, x: b.ob.x - dist + SX, y: GROUND - base - OB.boxSize, vx: 90, vy: -170, rot: 0, vr: 9 });
+    debris.push({ img: b.art, x: b.ob.x - dist + SX, y: GROUND - boxBase(b.ob) - OB.boxSize, vx: 90, vy: -170, rot: 0, vr: 9 });
+    reveal(b);
     if (!penalize) return;
     timer.addPenalty();
     grace = GAME.penalties.graceSeconds;
     shake = GAME.penalties.shakeSeconds;
     sparky.stumble(GAME.physics.hitStumbleTime);
-    popups.push({ text: `+${GAME.penalties.penaltySeconds}`, x: SX, y: GROUND - sparky.y - 40, age: 0 });
+    popups.push({ text: `+${GAME.penalties.penaltySeconds}`, x: SX, y: GROUND - sparky.y - 44, age: 0 });
+    sfx('hit');
     vibrate(60);
   }
 
+  function collectBall(ball) {
+    ball.got = true;
+    invT = BALL.invincibilitySeconds; // resets, never stacks
+    particles.burst(SX + (ball.x - dist), GROUND - ball.y, { count: 14, colors: [P.WHITE, P.FLAG_BLUE, P.FIRE_RED], speed: 110, gravity: 120, life: 0.5 });
+    popups.push({ text: 'POWER UP!', x: SX, y: GROUND - sparky.y - 44, age: 0, small: true });
+    sfx('collect');
+    vibrate(30);
+  }
+
   function finish() {
-    phase = 'done';
+    phase = 'celebrate';
+    celebrateT = 0;
+    invT = 0;
     timer.stop();
     result = timer.result();
     app.lastResult = result;
-    track('game_complete', { finalTimeMs: result.finalTimeMs, rawTimeMs: result.rawTimeMs, penalties: result.penalties });
     app.ui.setPauseVisible(false);
-    app.ui.showScreen('complete', { focus: false });
+    track('game_complete', { finalTimeMs: result.finalTimeMs, rawTimeMs: result.rawTimeMs, penalties: result.penalties });
+    sfx('fanfare');
+    particles.burst(W / 2, 120, { count: 40, colors: [P.FIRE_RED, P.WHITE, P.FLAG_BLUE, P.RED, P.BLUE], speed: 180, up: 60, gravity: 160, life: 1.6, scroll: false });
   }
 
   function step(dt) {
     sparky.update(dt);
     const sb = sparky.hitbox(dist);
+    const invincible = invT > 0;
+
     for (const b of boxes) {
       if (b.state !== 'pending') continue;
       const ob = b.ob;
       if (ob.x > dist + 40) break; // course is sorted; nothing further is close yet
       for (const r of ob.rects) {
+        if (invincible && !r.inset) continue; // cables don't matter when you're smashing boxes
         const ins = r.inset ? OB.hitboxInset : 0;
         const box = { x0: ob.x + r.x0 + ins, x1: ob.x + r.x1 - ins, y0: r.y0 + ins, y1: r.y1 - ins };
         if (overlaps(sb, box)) {
-          hitBox(b, grace <= 0 && !app.godMode);
+          if (invincible) shatterBox(b);
+          else hitBox(b, grace <= 0 && !app.godMode);
           break;
         }
       }
-      if (b.state === 'pending' && ob.x + ob.w < sb.x0) {
-        b.state = 'cleared';
-        cleared++;
-        speed = currentSpeed(cleared, GAME.speed);
-      }
+      if (b.state === 'pending' && ob.x + ob.w < sb.x0) clearBox(b);
     }
+
+    for (const ball of ballState) {
+      if (ball.got || Math.abs(ball.x - dist) > 30) continue;
+      if (circleHitsBox(ball.x, ball.y, BALL.radius, sb)) collectBall(ball);
+    }
+  }
+
+  function updateEffects(dt, worldSpeed) {
+    grace = Math.max(0, grace - dt);
+    shake = Math.max(0, shake - dt);
+    const wasWarning = invT > 0 && invT <= BALL.warningSeconds;
+    invT = Math.max(0, invT - dt);
+    if (!wasWarning && invT > 0 && invT <= BALL.warningSeconds) sfx('invincibleEnding');
+    for (const p of popups) { p.age += dt; p.y -= 30 * dt; }
+    popups = popups.filter((p) => p.age < 0.9);
+    for (const d of debris) {
+      d.vy += 600 * dt;
+      d.x += (d.vx - worldSpeed) * dt;
+      d.y += d.vy * dt;
+      d.rot += d.vr * dt;
+    }
+    debris = debris.filter((d) => d.y < GAME.view.height + 40);
+    particles.update(dt, worldSpeed);
+    banner.update(dt);
   }
 
   return {
     get result() { return result; },
     // Read-only snapshot for debug tools and automated play-tests.
     get debugState() {
-      return { phase, paused, dist, speed, cleared, total, course, sparky, timer, boxes, grace };
+      return { phase, paused, dist, speed, cleared, total, course, sparky, timer, boxes, balls: ballState, grace, invT };
+    },
+    // Debug: jump to just before the finish line.
+    skipToFinish() {
+      if (phase !== 'run') return;
+      for (const b of boxes) if (b.state === 'pending') { b.state = 'cleared'; cleared++; }
+      dist = course.finishX - 120;
     },
 
     enter() {
@@ -193,34 +295,40 @@ export function createPlayScene(app) {
     update(dt) {
       if (paused) return;
       t += dt;
+      let worldSpeed = 0;
 
       if (phase === 'countdown') {
+        const before = Math.floor(countT / GAME.ui.countdownStepSeconds);
         countT += dt;
+        const now = Math.floor(countT / GAME.ui.countdownStepSeconds);
+        if (now !== before) sfx(now >= 3 ? 'go' : 'beep');
         if (countT >= GAME.ui.countdownStepSeconds * 3) {
           phase = 'run';
           timer.start();
         }
       } else if (phase === 'run') {
+        worldSpeed = speed;
         dist += speed * dt;
         timer.tick(dt);
         step(dt);
         if (dist >= course.finishX) finish();
+      } else if (phase === 'celebrate') {
+        celebrateT += dt;
+        confettiT += dt;
+        if (confettiT > 0.3 && celebrateT < GAME.ui.celebrateSeconds && !app.reducedMotion) {
+          confettiT = 0;
+          particles.burst(20 + Math.random() * (W - 40), 60 + Math.random() * 60, { count: 12, colors: [P.FIRE_RED, P.WHITE, P.FLAG_BLUE, P.RED], speed: 90, gravity: 140, life: 1.4, scroll: false });
+        }
+        if (celebrateT >= GAME.ui.celebrateSeconds) {
+          phase = 'done';
+          app.ui.showScreen('complete', { focus: false });
+        }
       }
 
-      app.bg.update(dt, phase === 'run' ? speed : 0, 0);
-      grace = Math.max(0, grace - dt);
-      shake = Math.max(0, shake - dt);
-      for (const p of popups) { p.age += dt; p.y -= 30 * dt; }
-      popups = popups.filter((p) => p.age < 0.9);
-      for (const d of debris) {
-        d.vy += 600 * dt;
-        d.x += (d.vx - (phase === 'run' ? speed : 0)) * dt;
-        d.y += d.vy * dt;
-        d.rot += d.vr * dt;
-      }
-      debris = debris.filter((d) => d.y < 520);
+      app.bg.update(dt, worldSpeed, 0);
+      updateEffects(dt, worldSpeed);
 
-      const pose = phase === 'countdown' ? 'idle' : phase === 'done' ? 'victory' : sparky.pose;
+      const pose = phase === 'countdown' ? 'idle' : phase === 'run' ? sparky.pose : 'victory';
       anim.play(pose);
       anim.update(dt);
     },
@@ -234,49 +342,10 @@ export function createPlayScene(app) {
       }
       app.bg.render(ctx);
 
-      // Obstacles
-      const amp = reduced ? 1 : OB.bobAmplitude;
-      for (const b of boxes) {
-        const ob = b.ob;
-        const sx = Math.round(ob.x - dist + SX);
-        if (sx > W + 10) break;
-        if (sx + ob.w < -10) continue;
-        const wave = Math.sin(t * OB.bobSpeed + b.phase);
-        if (b.state !== 'hit' || ob.type === 'tall') shadow(ctx, sx + ob.w / 2, ob.w + 4, ob.type === 'floating' ? OB.floatingBottom : 0);
-        if (ob.type === 'floating') {
-          b.drawBottom = OB.floatingBottom + Math.round(wave * amp);
-          const top = GROUND - b.drawBottom - OB.boxSize;
-          ctx.fillStyle = P.DARK_NAVY;
-          ctx.fillRect(sx + ob.w / 2 - 1, 0, 2, top);
-          ctx.fillRect(sx + ob.w / 2 - 3, top - 2, 6, 2);
-        } else {
-          const base = ob.type === 'tall' ? OB.tallCrateHeight : 0;
-          if (ob.type === 'tall') ctx.drawImage(crate(ob.w, OB.tallCrateHeight), sx, GROUND - OB.tallCrateHeight);
-          b.drawBottom = base + Math.round(Math.abs(wave) * amp);
-        }
-        if (b.state === 'hit') continue;
-        const squash = ob.type !== 'floating' && !reduced && Math.abs(wave) < 0.12;
-        const y = GROUND - b.drawBottom - OB.boxSize;
-        if (squash) ctx.drawImage(b.art, sx - 1, y + 2, OB.boxSize + 2, OB.boxSize - 2);
-        else ctx.drawImage(b.art, sx, y);
-      }
-
-      // Sparky (flickers during grace frames)
-      shadow(ctx, SX, 18, sparky.y);
-      const visible = grace <= 0 || Math.floor(grace * 16) % 2 === 0;
-      if (visible) {
-        const feetY = GROUND - Math.round(sparky.y);
-        if (anim.name === 'spin') {
-          const turns = Math.floor(sparky.spinT / 0.1) % 4;
-          ctx.save();
-          ctx.translate(SX, feetY - 16); // spin around the middle of the 32px frame
-          ctx.rotate((turns * Math.PI) / 2);
-          app.sheet.draw(ctx, anim.frame, 0, 16);
-          ctx.restore();
-        } else {
-          app.sheet.draw(ctx, anim.frame, SX, feetY);
-        }
-      }
+      this.renderFinishLine(ctx);
+      this.renderBoxes(ctx, reduced);
+      this.renderBalls(ctx, reduced);
+      this.renderSparky(ctx);
 
       // Knocked-away boxes
       for (const d of debris) {
@@ -286,29 +355,18 @@ export function createPlayScene(app) {
         ctx.drawImage(d.img, -OB.boxSize / 2, -OB.boxSize / 2);
         ctx.restore();
       }
+      particles.render(ctx);
 
-      // "+10" pops
+      // "+10" and power-up pops
       for (const p of popups) {
-        drawText(ctx, p.text, p.x, p.y, { size: 16, align: 'center', color: P.FIRE_RED, outline: P.WHITE });
+        if (p.small) drawText(ctx, p.text, p.x + 10, p.y, { align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+        else drawText(ctx, p.text, p.x, p.y, { size: 16, align: 'center', color: P.FIRE_RED, outline: P.WHITE });
       }
 
-      if (debug) {
-        ctx.strokeStyle = P.FIRE_RED;
-        const sb = sparky.hitbox(dist);
-        ctx.strokeRect(SX + (sb.x0 - dist) + 0.5, GROUND - sb.y1 + 0.5, sb.x1 - sb.x0, sb.y1 - sb.y0);
-        ctx.strokeStyle = P.DARK_BLUE;
-        for (const b of boxes) {
-          const sx = b.ob.x - dist + SX;
-          if (sx > W || sx < -40) continue;
-          for (const r of b.ob.rects) {
-            const ins = r.inset ? OB.hitboxInset : 0;
-            const y1 = Math.min(r.y1 - ins, 600);
-            ctx.strokeRect(sx + r.x0 + ins + 0.5, GROUND - y1 + 0.5, r.x1 - r.x0 - 2 * ins, y1 - r.y0 - ins);
-          }
-        }
-      }
+      if (debug) this.renderDebug(ctx);
       ctx.restore();
 
+      banner.render(ctx, { reducedMotion: reduced });
       this.renderHud(ctx);
 
       if (phase === 'countdown') {
@@ -319,7 +377,136 @@ export function createPlayScene(app) {
         drawText(ctx, 'GO!', W / 2, 130, { size: 32, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
       }
 
+      if (phase === 'celebrate') {
+        const pop = reduced ? 0 : Math.round(Math.sin(Math.min(1, celebrateT * 3) * Math.PI) * 6);
+        drawText(ctx, 'SEASON', W / 2, 110 - pop, { size: 24, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
+        drawText(ctx, 'COMPLETE!', W / 2, 140 - pop, { size: 24, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, shadow: P.RED, shadowOffset: 3 });
+      }
       if (phase === 'done' && result) this.renderComplete(ctx);
+    },
+
+    renderFinishLine(ctx) {
+      const fx = Math.round(course.finishX - dist + SX);
+      if (fx < -60 || fx > W + 60) return;
+      const left = fx - GOAL_W / 2;
+      const top = GROUND - GOAL_H;
+      // Chequered finish line on the grass
+      for (let y = GROUND - 2; y < GROUND + 14; y += 2) {
+        for (let i = 0; i < 2; i++) {
+          ctx.fillStyle = (((y - GROUND) / 2 + i) % 2 === 0) ? P.WHITE : P.DARK_NAVY;
+          ctx.fillRect(fx - 2 + i * 2, y, 2, 2);
+        }
+      }
+      // Net
+      ctx.fillStyle = P.FLAG_BLUE;
+      for (let x = left + 4; x < left + GOAL_W; x += 4) ctx.fillRect(x, top + 3, 1, GOAL_H - 3);
+      for (let y = top + 6; y < GROUND; y += 4) ctx.fillRect(left + 3, y, GOAL_W - 4, 1);
+      // Posts and crossbar (white with dark outline)
+      ctx.fillStyle = P.DARK_NAVY;
+      ctx.fillRect(left - 1, top - 1, 5, GOAL_H + 1);
+      ctx.fillRect(left + GOAL_W - 4, top - 1, 5, GOAL_H + 1);
+      ctx.fillRect(left - 1, top - 1, GOAL_W + 2, 5);
+      ctx.fillStyle = P.WHITE;
+      ctx.fillRect(left, top, 3, GOAL_H);
+      ctx.fillRect(left + GOAL_W - 3, top, 3, GOAL_H);
+      ctx.fillRect(left, top, GOAL_W, 3);
+      // Club crest above the goal
+      if (app.crest) ctx.drawImage(app.crest, Math.round(fx - app.crest.width / 2), top - app.crest.width - 4);
+    },
+
+    renderBoxes(ctx, reduced) {
+      const amp = reduced ? 1 : OB.bobAmplitude;
+      for (const b of boxes) {
+        const ob = b.ob;
+        const sx = Math.round(ob.x - dist + SX);
+        if (sx > W + 10) break;
+        if (sx + ob.w < -10) continue;
+        const wave = Math.sin(t * OB.bobSpeed + b.phase);
+        const gone = b.state === 'hit' || b.shattered;
+        if (!gone || ob.type === 'tall') shadow(ctx, sx + ob.w / 2, ob.w + 4, ob.type === 'floating' ? OB.floatingBottom : 0);
+        let drawBottom;
+        if (ob.type === 'floating') {
+          drawBottom = OB.floatingBottom + Math.round(wave * amp);
+          if (!gone) {
+            const top = GROUND - drawBottom - OB.boxSize;
+            ctx.fillStyle = P.DARK_NAVY;
+            ctx.fillRect(sx + ob.w / 2 - 1, 0, 2, top);
+            ctx.fillRect(sx + ob.w / 2 - 3, top - 2, 6, 2);
+          }
+        } else {
+          if (ob.type === 'tall') ctx.drawImage(crate(ob.w, OB.tallCrateHeight), sx, GROUND - OB.tallCrateHeight);
+          drawBottom = (ob.type === 'tall' ? OB.tallCrateHeight : 0) + Math.round(Math.abs(wave) * amp);
+        }
+        if (gone) continue;
+        const squash = ob.type !== 'floating' && !reduced && Math.abs(wave) < 0.12;
+        const y = GROUND - drawBottom - OB.boxSize;
+        if (squash) ctx.drawImage(b.art, sx - 1, y + 2, OB.boxSize + 2, OB.boxSize - 2);
+        else ctx.drawImage(b.art, sx, y);
+      }
+    },
+
+    renderBalls(ctx, reduced) {
+      for (const ball of ballState) {
+        if (ball.got) continue;
+        const sx = Math.round(ball.x - dist + SX);
+        if (sx < -12 || sx > W + 12) continue;
+        const bob = reduced ? 0 : Math.round(Math.sin(t * 3 + ball.phase) * BALL.bobAmplitude);
+        const cy = GROUND - ball.y + bob;
+        shadow(ctx, sx, 10, ball.y);
+        const frame = balls[reduced ? 0 : Math.floor(t * BALL.spinFps + ball.phase) % 4];
+        ctx.drawImage(frame, sx - 5, cy - 5);
+        // Sparkle: a twinkling pixel cross that hops around the ball
+        const k = Math.floor(t * 4 + ball.phase) % 4;
+        const [ox, oy] = [[-8, -7], [7, -6], [8, 5], [-7, 6]][k];
+        if (Math.floor(t * 8 + ball.phase) % 2 === 0) {
+          ctx.fillStyle = k % 2 ? P.FLAG_BLUE : P.WHITE;
+          ctx.fillRect(sx + ox, cy + oy - 1, 1, 3);
+          ctx.fillRect(sx + ox - 1, cy + oy, 3, 1);
+        }
+      }
+    },
+
+    renderSparky(ctx) {
+      shadow(ctx, SX, 18, sparky.y);
+      const visible = invT > 0 || grace <= 0 || Math.floor(grace * 16) % 2 === 0;
+      if (!visible) return;
+      const feetY = GROUND - Math.round(sparky.y);
+      const warning = invT > 0 && invT <= BALL.warningSeconds;
+      const glowOn = invT > 0 && (!warning || Math.floor(invT * 10) % 2 === 0);
+      const glow = GLOW[Math.floor(t * 10) % GLOW.length];
+      if (anim.name === 'spin') {
+        const turns = Math.floor(sparky.spinT / 0.1) % 4;
+        ctx.save();
+        ctx.translate(SX, feetY - 16); // spin around the middle of the 32px frame
+        ctx.rotate((turns * Math.PI) / 2);
+        if (glowOn) app.sheet.drawGlow(ctx, anim.frame, 0, 16, glow);
+        app.sheet.draw(ctx, anim.frame, 0, 16);
+        ctx.restore();
+      } else {
+        if (glowOn) app.sheet.drawGlow(ctx, anim.frame, SX, feetY, glow);
+        app.sheet.draw(ctx, anim.frame, SX, feetY);
+      }
+    },
+
+    renderDebug(ctx) {
+      ctx.strokeStyle = P.FIRE_RED;
+      const sb = sparky.hitbox(dist);
+      ctx.strokeRect(SX + (sb.x0 - dist) + 0.5, GROUND - sb.y1 + 0.5, sb.x1 - sb.x0, sb.y1 - sb.y0);
+      ctx.strokeStyle = P.DARK_BLUE;
+      for (const b of boxes) {
+        const sx = b.ob.x - dist + SX;
+        if (sx > W || sx < -40) continue;
+        for (const r of b.ob.rects) {
+          const ins = r.inset ? OB.hitboxInset : 0;
+          const y1 = Math.min(r.y1 - ins, 600);
+          ctx.strokeRect(sx + r.x0 + ins + 0.5, GROUND - y1 + 0.5, r.x1 - r.x0 - 2 * ins, y1 - r.y0 - ins);
+        }
+      }
+      for (const ball of ballState) {
+        if (ball.got) continue;
+        const sx = ball.x - dist + SX;
+        ctx.strokeRect(sx - BALL.radius + 0.5, GROUND - ball.y - BALL.radius + 0.5, BALL.radius * 2, BALL.radius * 2);
+      }
     },
 
     renderHud(ctx) {
@@ -332,6 +519,19 @@ export function createPlayScene(app) {
       ctx.fillRect(x, y, w, 1);
       drawText(ctx, formatTime(timer.displayMs), x + 6, y + 5, { size: 16, color: P.WHITE, shadow: P.DARK_RED });
       drawText(ctx, `BOX ${cleared}/${total}`, x + 6, y + 26, { size: 8, color: P.WHITE });
+
+      // Invincibility meter (only while active): ball icon + draining bar, blinks in the last second
+      if (invT > 0) {
+        const my = y + h + 3;
+        const warning = invT <= BALL.warningSeconds && Math.floor(invT * 10) % 2 === 0;
+        ctx.drawImage(balls[0], x, my);
+        ctx.fillStyle = P.DARK_NAVY;
+        ctx.fillRect(x + 12, my + 2, w - 12, 7);
+        ctx.fillStyle = P.NAVY;
+        ctx.fillRect(x + 13, my + 3, w - 14, 5);
+        ctx.fillStyle = warning ? P.WHITE : P.FLAG_BLUE;
+        ctx.fillRect(x + 13, my + 3, Math.ceil((w - 14) * (invT / BALL.invincibilitySeconds)), 5);
+      }
     },
 
     renderComplete(ctx) {

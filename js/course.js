@@ -120,5 +120,31 @@ export function buildCourse(matches, GAME) {
   }
   const last = list[list.length - 1];
   const finishX = last ? last.x + last.w + recoverTime(last.type, physics) * vmax + course.finishRunout : course.leadIn;
-  return { obstacles: list, finishX, vmax };
+  return { obstacles: list, finishX, vmax, balls: placeBalls(list, GAME) };
+}
+
+// Soccer balls sit where clearing a nearby box naturally collects them, never forcing a hit:
+// - over a ground box, near the top of a normal jump arc
+// - low down just before a floating box, where Sparky is ducking (or still running)
+export function placeBalls(obstacles, GAME) {
+  const { count, arcHeight, lowHeight, lowLead } = GAME.balls;
+  const n = obstacles.length;
+  const used = new Set();
+  const balls = [];
+  for (let k = 0; k < count && n > 0; k++) {
+    const target = Math.min(n - 1, Math.round(((k + 0.5) / count) * n));
+    // Search outward from the target for a ground or floating box not already used.
+    for (let d = 0; d < n; d++) {
+      const cand = [target + d, target - d].filter((i) => i >= 0 && i < n && !used.has(i));
+      const pick = cand.find((i) => obstacles[i].type !== 'tall');
+      if (pick === undefined) continue;
+      used.add(pick);
+      const ob = obstacles[pick];
+      balls.push(ob.type === 'floating'
+        ? { x: ob.x - lowLead, y: lowHeight, near: pick }
+        : { x: ob.x + ob.w / 2, y: arcHeight, near: pick });
+      break;
+    }
+  }
+  return balls.sort((a, b) => a.x - b.x);
 }

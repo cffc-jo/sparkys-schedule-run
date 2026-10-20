@@ -71,6 +71,12 @@ export const GAME = {
     count: 5,                   // soccer balls placed on the course
     invincibilitySeconds: 5,    // duration of invincibility per ball (collecting again resets)
     warningSeconds: 1,          // final seconds of invincibility that flicker as a warning
+    arcHeight: 78,              // ball centre height when floating over a ground box (top of a jump)
+    lowHeight: 8,               // ball centre height when placed just before a floating box
+    lowLead: 34,                // px in front of a floating box for the low ball
+    radius: 7,                  // collection radius (generous: grabbing a ball should feel easy)
+    bobAmplitude: 2,            // hover bob (px)
+    spinFps: 8,                 // 4-frame spin speed
   },
 
   input: {
@@ -80,6 +86,7 @@ export const GAME = {
 
   ui: {
     bannerSeconds: 1.8,         // how long the "MATCH 12 · vs. NYCFC" reveal banner stays up
+    celebrateSeconds: 1.8,      // victory animation at the finish before the time breakdown
     countdownStepSeconds: 0.75, // length of each 3-2-1 beat
     buttonCooldownMs: 350,      // ignore repeat taps on the same button within this window
   },

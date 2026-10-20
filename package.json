@@ -1,0 +1,13 @@
+{
+  "name": "sparkys-schedule-run",
+  "private": true,
+  "description": "Chicago Fire FC schedule release game. No build step: the site is served as-is. Node is only needed for dev tools.",
+  "type": "module",
+  "scripts": {
+    "logos": "node tools/pixelate-logos.js",
+    "test": "node tests/run.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

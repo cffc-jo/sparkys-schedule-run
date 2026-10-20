@@ -125,7 +125,8 @@ async function boot() {
   const assets = await loadAssets([
     { key: 'schedule', type: 'json', src: 'config/schedule.json' },
     { key: 'sparky', type: 'image', src: SPARKY_SHEET.src, optional: true },
-    { key: 'crest', type: 'image', src: 'assets/crest.svg', optional: true },
+    { key: 'chi', type: 'image', src: 'assets/logos/CHI.png', optional: true }, // pixel crest from tools/pixelate-logos.js
+    { key: 'crest', type: 'image', src: 'assets/crest.svg', optional: true },   // fallback until CHI.png exists
   ], (p) => { loadProgress = p; });
 
   app.assets = assets;
@@ -139,7 +140,7 @@ async function boot() {
   const logos = await loadAssets(logoPaths.map((src) => ({ key: src, type: 'image', src, optional: true })));
   app.logos = logos;
   app.sheet = createSpriteSheet(assets.sparky || buildSparkySheet(SPARKY_SHEET), SPARKY_SHEET);
-  app.crest = assets.crest ? pixelateImage(assets.crest, 44) : null;
+  app.crest = assets.chi || (assets.crest ? pixelateImage(assets.crest, 44) : null);
   app.bg = createBackground();
 
   // DOM: bind config values into the instructions, icons, links
