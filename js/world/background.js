@@ -189,7 +189,7 @@ function buildNearCity() {
   x.fillRect(hx + 16, base - 150, 1, 22);
 
   drawWrigley(x, 54, base);
-  drawStadium(x, 166, base);
+  drawStadium(x, 172, base);
 
   // Aircraft warning lights
   x.fillStyle = P.FIRE_RED;
@@ -234,46 +234,56 @@ function drawWrigley(x, x0, base) {
   rect(S.WRIGLEY, 12, 106, 1, 6);
 }
 
-// McDonald's Park (planned Chicago Fire FC stadium at The 78): a long, low red-brick building
-// with two rows of large dark-glass window bays in light frames, a flat dark roof overhanging
-// the top, and a taller corner block with Fire-red banners. (x = context, x0 = left edge)
+// McDonald's Park (planned Chicago Fire FC stadium at The 78), main face: symmetrical red-brick
+// facade around a tall glass entrance under the sign band, dark-glass window bays in light
+// frames mirrored on each side, Fire-red banner piers at both corners, and a flat, dark,
+// overhanging roof. (x = context, x0 = left edge)
 function drawStadium(x, x0, base) {
-  const LEN = 70;          // facade length
+  const LEN = 62;          // facade length (symmetrical about the middle)
   const H = 24;            // brick height
+  const PIER = 8;          // corner pier width
+  const mid = LEN / 2;
   const rect = (c, rx, ry, w, h) => { x.fillStyle = c; x.fillRect(x0 + rx, base - ry - h, w, h); };
+  // Draw something and its mirror image on the other side of the entrance
+  const both = (c, rx, ry, w, h) => { rect(c, rx, ry, w, h); rect(c, LEN - rx - w, ry, w, h); };
 
-  // Brick body + slightly taller corner block on the right
+  // Brick body and the two slightly taller corner piers
   rect(S.STADIUM_BRICK, 0, 0, LEN, H);
-  rect(S.STADIUM_BRICK, LEN - 14, 0, 14, H + 3);
-  rect(S.STADIUM_BRICK_DARK, 0, 0, LEN, 1);              // plinth
-  rect(S.STADIUM_BRICK_DARK, 0, 11, LEN - 14, 1);        // floor line between window rows
-  rect(S.STADIUM_BRICK_DARK, LEN - 15, 0, 1, H + 3);     // corner edge
+  both(S.STADIUM_BRICK, 0, 0, PIER, H + 3);
+  rect(S.STADIUM_BRICK_DARK, 0, 0, LEN, 1);                 // plinth
+  both(S.STADIUM_BRICK_DARK, PIER, 0, 1, H);                // pier edges
+  both(S.STADIUM_BRICK_DARK, PIER, 11, mid - 6 - PIER, 1);  // floor line between window rows
 
-  // Window bays: two rows of dark glass with a light frame on top and a mullion down the middle
-  const bay = (bx, by, w, h) => {
-    rect(S.STADIUM_FRAME, bx, by, w, h);
-    rect(S.STADIUM_GLASS, bx + 1, by, w - 2, h - 1);
-    rect(S.STADIUM_FRAME, bx + Math.floor(w / 2), by, 1, h - 1);
+  // Fire-red banners on the piers
+  both(P.FIRE_RED, 3, 9, 2, 14);
+  both(P.WHITE, 3, 17, 2, 1);
+
+  // Window bays (two per side, two rows), mirrored around the entrance
+  const bay = (bx, by) => {
+    both(S.STADIUM_FRAME, bx, by, 6, 8);
+    both(S.STADIUM_GLASS, bx + 1, by, 4, 7);
+    both(S.STADIUM_FRAME, bx + 3, by, 1, 7);
   };
-  for (let bx = 2; bx + 6 <= LEN - 16; bx += 7) {
-    bay(bx, 13, 6, 8);   // upper concourse
-    bay(bx, 2, 6, 8);    // street level
+  for (const bx of [PIER + 2, PIER + 9]) {
+    bay(bx, 13);   // upper concourse
+    bay(bx, 2);    // street level
   }
-  // Corner block: tall glass slots and two Fire-red banners
-  bay(LEN - 12, 2, 4, 8);
-  bay(LEN - 6, 2, 4, 8);
-  rect(P.FIRE_RED, LEN - 12, 13, 2, 10);
-  rect(P.FIRE_RED, LEN - 5, 13, 2, 10);
-  rect(P.WHITE, LEN - 12, 18, 2, 1);
-  rect(P.WHITE, LEN - 5, 18, 2, 1);
-  // Light sign band along the top of the long facade
-  rect(S.STADIUM_FRAME, 20, H - 2, 16, 1);
+
+  // Central entrance: tall framed glass opening, doors at the bottom, sign band above
+  const ex = mid - 6;
+  rect(S.STADIUM_FRAME, ex, 1, 12, 19);
+  rect(S.STADIUM_GLASS, ex + 1, 1, 10, 18);
+  for (const mx of [ex + 3, ex + 6, ex + 9]) rect(S.STADIUM_FRAME, mx, 1, 1, 18);
+  rect(S.STADIUM_FRAME, ex + 1, 9, 10, 1);
+  rect(S.STADIUM_BRICK_DARK, ex - 1, 20, 14, 3);             // sign band...
+  rect(S.STADIUM_FRAME, ex + 1, 21, 10, 1);                  // ...with light lettering
+  rect(P.FIRE_RED, mid - 1, 21, 2, 1);                       // little red mark in the middle
 
   // Flat, dark roof overhanging the whole building, lifted slightly above the brick
   rect(S.STADIUM_ROOF, -3, H + 1, LEN + 6, 3);
-  rect(S.STADIUM_ROOF_EDGE, -3, H + 1, LEN + 6, 1);       // lit underside edge
+  rect(S.STADIUM_ROOF_EDGE, -3, H + 1, LEN + 6, 1);         // lit underside edge
   rect(S.STADIUM_ROOF, -3, H + 4, LEN + 6, 1);
-  for (const px of [0, 18, 36, LEN - 16]) rect(S.STADIUM_ROOF, px, H, 1, 1); // supports
+  for (const px of [PIER + 4, mid - 8, mid + 7, LEN - PIER - 5]) rect(S.STADIUM_ROOF, px, H, 1, 1); // supports
 }
 
 // Mowed pitch tile from the foot of the boards to the bottom of the screen.
