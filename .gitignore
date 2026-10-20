@@ -1,6 +1,11 @@
 # Reference photos (watermarked stock / costume refs) — never publish
 /reference/
 
+# High-res original club logos: kept locally for tools/pixelate-logos.js and the contact sheet,
+# but not published (GitHub Pages would serve them). Only the 24px pixel versions in assets/logos/ ship.
+/assets/logos-source/*
+!/assets/logos-source/.gitkeep
+
 # Dev tooling
 node_modules/
 .claude/
