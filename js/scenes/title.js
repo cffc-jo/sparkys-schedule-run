@@ -32,12 +32,25 @@ export function createTitleScene(app) {
         ctx.drawImage(c, Math.round(cx - c.width / 2), 18);
       }
 
-      drawText(ctx, "SPARKY'S", cx, 74, { size: 16, align: 'center', color: P.WHITE, shadow: P.RED, shadowOffset: 2 });
-      drawText(ctx, 'SCHEDULE RUN', cx, 96, { size: 16, align: 'center', color: P.WHITE, shadow: P.RED, shadowOffset: 2 });
-      drawText(ctx, `${app.schedule.season} SEASON`, cx, 124, { size: 8, align: 'center', color: P.FLAG_BLUE, shadow: P.DARK_NAVY });
+      // Red title banner: Fire Red highlight, Red body, Deep Red season strip, Dark Red lip
+      const by = 66;
+      ctx.fillStyle = P.DARK_NAVY;
+      ctx.fillRect(0, by - 1, W, 76);
+      ctx.fillStyle = P.FIRE_RED;
+      ctx.fillRect(0, by, W, 2);
+      ctx.fillStyle = P.RED;
+      ctx.fillRect(0, by + 2, W, 52);
+      ctx.fillStyle = P.DEEP_RED;
+      ctx.fillRect(0, by + 54, W, 16);
+      ctx.fillStyle = P.DARK_RED;
+      ctx.fillRect(0, by + 70, W, 4);
 
-      drawText(ctx, 'RUN THE SEASON.', cx, 300, { size: 8, align: 'center', color: P.WHITE, shadow: P.DARK_NAVY });
-      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 314, { size: 8, align: 'center', color: P.WHITE, shadow: P.DARK_NAVY });
+      drawText(ctx, "SPARKY'S", cx, by + 8, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
+      drawText(ctx, 'SCHEDULE RUN', cx, by + 30, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
+      drawText(ctx, `${app.schedule.season} SEASON`, cx, by + 58, { size: 8, align: 'center', color: P.FLAG_BLUE });
+
+      drawText(ctx, 'RUN THE SEASON.', cx, 300, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 314, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
 
       // Sparky idles on the pitch at 2x for the showcase
       const bob = app.reducedMotion ? 0 : Math.round(Math.sin(t * 3) * 1);

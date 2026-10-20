@@ -60,23 +60,23 @@ let loadProgress = 0;
 let loadError = null;
 
 function drawLoading() {
-  ctx.fillStyle = P.NAVY;
+  ctx.fillStyle = P.RED;
   ctx.fillRect(0, 0, W, H);
   const bw = 150, bh = 10, bx = (W - bw) / 2, by = H / 2;
   if (loadError) {
     drawText(ctx, 'COULD NOT LOAD', W / 2, by - 20, { align: 'center', color: P.WHITE });
-    drawText(ctx, 'PLEASE REFRESH', W / 2, by, { align: 'center', color: P.FLAG_BLUE });
+    drawText(ctx, 'PLEASE REFRESH', W / 2, by, { align: 'center', color: P.WHITE });
     return;
   }
-  drawText(ctx, 'LOADING', W / 2, by - 20, { align: 'center', color: P.WHITE });
-  ctx.fillStyle = P.DARK_NAVY;
+  drawText(ctx, 'LOADING', W / 2, by - 20, { align: 'center', color: P.WHITE, shadow: P.DARK_RED });
+  ctx.fillStyle = P.DARK_RED;
   ctx.fillRect(bx - 2, by - 2, bw + 4, bh + 4);
-  ctx.fillStyle = P.DEEP_NAVY;
+  ctx.fillStyle = P.DEEP_RED;
   ctx.fillRect(bx, by, bw, bh);
   // Chunky 8-bit segments
   const seg = 10;
   const filled = Math.floor((bw / seg) * loadProgress);
-  ctx.fillStyle = P.FLAG_BLUE;
+  ctx.fillStyle = P.WHITE;
   for (let i = 0; i < filled; i++) ctx.fillRect(bx + i * seg + 1, by + 1, seg - 2, bh - 2);
 }
 

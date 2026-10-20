@@ -23,8 +23,8 @@ export function createStubScene(app) {
     render(ctx) {
       const cx = GAME.view.width / 2;
       app.bg.render(ctx, { reducedMotion: app.reducedMotion });
-      drawText(ctx, 'GAMEPLAY ARRIVES', cx, 120, { align: 'center', color: P.WHITE, shadow: P.DARK_NAVY });
-      drawText(ctx, 'IN PHASE 2', cx, 136, { align: 'center', color: P.FLAG_BLUE, shadow: P.DARK_NAVY });
+      drawText(ctx, 'GAMEPLAY ARRIVES', cx, 120, { align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'IN PHASE 2', cx, 136, { align: 'center', color: P.WHITE, outline: P.RED });
       app.sheet.draw(ctx, anim.frame, GAME.world.sparkyX, GAME.world.groundY);
     },
   };
