@@ -24,6 +24,7 @@ const BALL = GAME.balls;
 const GOAL_W = 30;      // goal mouth width at the finish
 const GOAL_H = 56;      // crossbar height
 const GLOW = [P.FIRE_RED, P.FLAG_BLUE, P.RED, P.BLUE];
+const CREST = GAME.world.crestSize;
 
 function vibrate(ms) {
   try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* unsupported (iOS) */ }
@@ -352,7 +353,7 @@ export function createPlayScene(app) {
         ctx.save();
         ctx.translate(Math.round(d.x + OB.boxSize / 2), Math.round(d.y + OB.boxSize / 2));
         ctx.rotate(Math.round(d.rot / (Math.PI / 4)) * (Math.PI / 4));
-        ctx.drawImage(d.img, -OB.boxSize / 2, -OB.boxSize / 2);
+        ctx.drawImage(d.img, -OB.boxSize / 2, -OB.boxSize / 2, OB.boxSize, OB.boxSize);
         ctx.restore();
       }
       particles.render(ctx);
@@ -411,7 +412,7 @@ export function createPlayScene(app) {
       ctx.fillRect(left + GOAL_W - 3, top, 3, GOAL_H);
       ctx.fillRect(left, top, GOAL_W, 3);
       // Club crest above the goal
-      if (app.crest) ctx.drawImage(app.crest, Math.round(fx - app.crest.width / 2), top - app.crest.width - 4);
+      if (app.crest) ctx.drawImage(app.crest, Math.round(fx - CREST / 2), top - CREST - 4, CREST, CREST);
     },
 
     renderBoxes(ctx, reduced) {
@@ -441,7 +442,7 @@ export function createPlayScene(app) {
         const squash = ob.type !== 'floating' && !reduced && Math.abs(wave) < 0.12;
         const y = GROUND - drawBottom - OB.boxSize;
         if (squash) ctx.drawImage(b.art, sx - 1, y + 2, OB.boxSize + 2, OB.boxSize - 2);
-        else ctx.drawImage(b.art, sx, y);
+        else ctx.drawImage(b.art, sx, y, OB.boxSize, OB.boxSize);
       }
     },
 

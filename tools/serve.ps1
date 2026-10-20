@@ -1,7 +1,11 @@
 # Tiny static file server for local testing (no Node needed). Run from anywhere:
 #   powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 # then open http://localhost:8541/
-$root = Split-Path -Parent $PSScriptRoot
+#
+# Dev-only extra: the logo contact sheet (tools/logo-preview.html) can save regenerated logos
+# with PUT /assets/logos/<CODE>.png. Only that folder, only .png files named by club code, and
+# only on localhost. GitHub Pages is static, so none of this exists once deployed.
+$root = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $port = 8541
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
@@ -20,16 +24,41 @@ $mime = @{
   ".woff2" = "font/woff2"
 }
 
+function Send-Text($res, $code, $text) {
+  $res.StatusCode = $code
+  $msg = [Text.Encoding]::UTF8.GetBytes($text)
+  $res.OutputStream.Write($msg, 0, $msg.Length)
+}
+
 while ($listener.IsListening) {
   try {
     $ctx = $listener.GetContext()
     $req = $ctx.Request
     $res = $ctx.Response
-    $path = $req.Url.AbsolutePath
+    $path = [Uri]::UnescapeDataString($req.Url.AbsolutePath)
     if ($path -eq "/") { $path = "/index.html" }
-    $filePath = Join-Path $root ($path.TrimStart("/") -replace "/", [IO.Path]::DirectorySeparatorChar)
+    $filePath = [IO.Path]::GetFullPath((Join-Path $root ($path.TrimStart("/") -replace "/", [IO.Path]::DirectorySeparatorChar)))
+    $res.AddHeader("Cache-Control", "no-store")
 
-    if (Test-Path $filePath -PathType Leaf) {
+    if (-not $filePath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+      Send-Text $res 403 "Forbidden"
+    } elseif ($req.HttpMethod -eq "PUT") {
+      if ($path -cmatch '^/assets/logos/[A-Z0-9_]{1,12}\.png$') {
+        $ms = New-Object IO.MemoryStream
+        $req.InputStream.CopyTo($ms)
+        $bytes = $ms.ToArray()
+        # PNG signature check
+        if ($bytes.Length -gt 8 -and $bytes.Length -lt 2000000 -and $bytes[0] -eq 0x89 -and $bytes[1] -eq 0x50 -and $bytes[2] -eq 0x4E -and $bytes[3] -eq 0x47) {
+          [IO.File]::WriteAllBytes($filePath, $bytes)
+          Write-Host "Saved $path ($($bytes.Length) bytes)"
+          Send-Text $res 200 "Saved"
+        } else {
+          Send-Text $res 400 "Not a PNG"
+        }
+      } else {
+        Send-Text $res 403 "Only assets/logos/<CODE>.png can be saved"
+      }
+    } elseif (Test-Path $filePath -PathType Leaf) {
       $ext = [IO.Path]::GetExtension($filePath).ToLower()
       $ct = $mime[$ext]
       if (-not $ct) { $ct = "application/octet-stream" }
@@ -38,9 +67,7 @@ while ($listener.IsListening) {
       $res.ContentLength64 = $bytes.Length
       $res.OutputStream.Write($bytes, 0, $bytes.Length)
     } else {
-      $res.StatusCode = 404
-      $msg = [Text.Encoding]::UTF8.GetBytes("Not found: $path")
-      $res.OutputStream.Write($msg, 0, $msg.Length)
+      Send-Text $res 404 "Not found: $path"
     }
     $res.OutputStream.Close()
   } catch {

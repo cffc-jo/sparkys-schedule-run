@@ -10,8 +10,8 @@
 // switches back).
 
 export const DEFAULTS = {
-  size: 24,           // output size (px). Matches GAME.obstacles.logoSize
-  colors: 10,         // max colours per logo (taken from the logo itself)
+  size: 48,           // output size (px) = GAME.obstacles.logoSize (24) x GAME.view.renderScale (2)
+  colors: 16,         // max colours per logo (taken from the logo itself)
   outline: true,      // 1px dark outline around the shape (drawn inside `size`)
   outlineColor: [0x16, 0x00, 0x08], // Dark Navy
   alphaCutoff: 128,   // alpha >= this becomes fully opaque
@@ -96,7 +96,7 @@ export function downscale(img, n, mode = 'area') {
 // 4. Palette = the logo's own most-used colours, read from the full-resolution source so the
 // anti-aliased in-between shades on edges never make the cut. Colours closer than `minDistance`
 // to one already chosen are merged; tiny accents under `minShare` of the logo are dropped.
-export function buildPalette(img, maxColors, alphaCutoff, { minDistance = 48, minShare = 0.004 } = {}) {
+export function buildPalette(img, maxColors, alphaCutoff, { minDistance = 40, minShare = 0.002 } = {}) {
   const buckets = new Map(); // 4 bits per channel
   const step = Math.max(1, Math.floor((img.width * img.height) / 250000)); // sample big images
   let total = 0;

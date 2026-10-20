@@ -4,6 +4,8 @@ export const GAME = {
   view: {
     width: 240,                 // logical canvas width (portrait). Smaller = more zoomed in
     height: 428,                // logical canvas height (~9:16)
+    renderScale: 2,             // backing canvas = logical size x this. Logos are drawn at this extra
+                                // detail (24 logical px = 48px logo files); all other art is unchanged
     integerScaleMinFill: 0.88,  // use a whole-number device-pixel scale only if it fills >= 88% of the
                                 // available space; otherwise fall back to a fractional pixelated fit
   },
@@ -18,6 +20,7 @@ export const GAME = {
     pitchDepth: 64,             // px of pitch visible between the LED boards and the running line.
                                 // Pitch (boards' foot to screen bottom) = height - groundY + pitchDepth ~= 1/3 of the screen
     sparkyX: 46,                // Sparky's fixed screen x (centre of sprite)
+    crestSize: 44,              // club crest size on the title screen and above the finish goal (logical px)
     titleBoardSpeed: 24,        // px/s the LED board text scrolls on the title screen
   },
 
@@ -51,7 +54,7 @@ export const GAME = {
 
   obstacles: {
     boxSize: 30,                // logo box outer size (px): 1px outline + 2px border + 24px logo
-    logoSize: 24,               // pixel-logo size drawn inside the box
+    logoSize: 24,               // logo slot inside the box (logical px). Logo files are this x renderScale
     floatingBottom: 20,         // gap under a floating box (px above ground). Must sit between the duck and stand hitbox heights.
                                 // Floating boxes hang from a cable, so jumping over them is impossible
     tallCrateHeight: 44,        // plain crate under a "tall" logo box (total 74px > single-jump apex ~67px)

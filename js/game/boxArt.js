@@ -1,7 +1,12 @@
 // Pre-rendered obstacle art: "?"-block style logo boxes and the plain crate under tall boxes.
 // HOME boxes have a solid red frame; AWAY boxes a dashed sky-blue frame (shape + colour, not colour alone).
 import { PALETTE as P } from '../../config/palette.js';
+import { GAME } from '../../config/game.js';
 import { textSprite } from '../pixelText.js';
+
+// Box canvases are built at the render scale so the logo keeps its extra detail.
+// Callers always draw them at the logical size: drawImage(art, x, y, size, size).
+const RS = GAME.view.renderScale;
 
 const cache = new Map();
 
@@ -20,14 +25,15 @@ export function abbrevLines(code) {
   return [c.slice(0, 3), c.slice(3, 6)];
 }
 
-export function logoBox(match, logoImg, size, logoSize) {
+export function logoBox(match, logoImg, size, logoSize, scale = RS) {
   const home = String(match.homeAway).toUpperCase() === 'HOME';
-  const key = `${match.code}|${home}|${logoImg ? 1 : 0}|${size}`;
+  const key = `${match.code}|${home}|${logoImg ? 1 : 0}|${size}|${scale}`;
   if (cache.has(key)) return cache.get(key);
 
-  const c = canvas(size, size);
+  const c = canvas(size * scale, size * scale);
   const x = c.getContext('2d');
   x.imageSmoothingEnabled = false;
+  x.scale(scale, scale); // draw the frame in logical pixels
   // Outline
   x.fillStyle = P.DARK_NAVY;
   x.fillRect(0, 0, size, size);

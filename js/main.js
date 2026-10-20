@@ -140,7 +140,7 @@ async function boot() {
   const logos = await loadAssets(logoPaths.map((src) => ({ key: src, type: 'image', src, optional: true })));
   app.logos = logos;
   app.sheet = createSpriteSheet(assets.sparky || buildSparkySheet(SPARKY_SHEET), SPARKY_SHEET);
-  app.crest = assets.chi || (assets.crest ? pixelateImage(assets.crest, 44) : null);
+  app.crest = assets.chi || (assets.crest ? pixelateImage(assets.crest, GAME.world.crestSize * GAME.view.renderScale) : null);
   app.bg = createBackground();
 
   // DOM: bind config values into the instructions, icons, links

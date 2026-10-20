@@ -28,8 +28,8 @@ export function createTitleScene(app) {
       app.bg.render(ctx, { reducedMotion: app.reducedMotion });
 
       if (app.crest) {
-        const c = app.crest;
-        ctx.drawImage(c, Math.round(cx - c.width / 2), 12);
+        const size = GAME.world.crestSize;
+        ctx.drawImage(app.crest, Math.round(cx - size / 2), 12, size, size);
       }
 
       // Red title banner: Fire Red highlight, Red body, Deep Red season strip, Dark Red lip

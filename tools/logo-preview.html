@@ -31,15 +31,16 @@
 </head>
 <body>
   <h1>Logo contact sheet</h1>
-  <p>Each club's original logo (from <code>assets/logos-source/</code>) next to its 8-bit version at 1×, 2× and 4×, plus how it sits in a HOME and AWAY box. Pixel versions are generated here in the browser with the same code as <code>tools/pixelate-logos.js</code>, so this page also works without Node.</p>
+  <p>Each club's original logo (from <code>assets/logos-source/</code>) next to its pixel version at 1×, 2× and 4× (1× = the 48px file; in game it fills a 24px slot at double detail), plus how it sits in a HOME and AWAY box. Pixel versions are generated here in the browser with the same code as <code>tools/pixelate-logos.js</code>, so this page also works without Node.</p>
   <p><strong>Brand/legal:</strong> these are stylised renderings of other clubs' marks. Get them approved before launch.</p>
   <div class="bar">
-    <label>Size <input id="size" type="number" min="12" max="48" value="24" style="width:4em"></label>
-    <label>Colours <input id="colors" type="number" min="2" max="16" value="10" style="width:4em"></label>
+    <label>Size <input id="size" type="number" min="12" max="96" value="48" style="width:4em"></label>
+    <label>Colours <input id="colors" type="number" min="2" max="24" value="16" style="width:4em"></label>
     <label><input id="outline" type="checkbox" checked> Outline</label>
     <label>Resample <select id="resample"><option value="area">area (keeps detail)</option><option value="nearest">nearest</option></select></label>
     <button id="regen" class="secondary">Regenerate</button>
-    <button id="dlall">Download all PNGs</button>
+    <button id="save" title="Writes straight into assets/logos/ (works with tools/serve.ps1)">Save to assets/logos/</button>
+    <button id="dlall" class="secondary">Download all PNGs</button>
     <span id="status"></span>
   </div>
   <div class="grid" id="grid"></div>
@@ -124,8 +125,8 @@
           continue;
         }
         found++;
-        const size = code === 'CHI' ? 44 : opts.size;
-        const { image, palette } = pixelateLogo(toRgba(img), { ...opts, size, colors: code === 'CHI' ? Math.max(12, opts.colors) : opts.colors });
+        const size = code === 'CHI' ? 88 : opts.size;
+        const { image, palette } = pixelateLogo(toRgba(img), { ...opts, size });
         results.set(code, image);
         const small = document.createElement('small');
         small.textContent = `${img.naturalWidth}×${img.naturalHeight} → ${size}×${size}, ${palette.length} colours`;
@@ -145,7 +146,7 @@
           boxes.className = 'boxes';
           const logo = toCanvas(image, 1);
           for (const homeAway of ['HOME', 'AWAY']) {
-            const b = logoBox({ code: code + homeAway, homeAway }, logo, 30, 24);
+            const b = logoBox({ code: code + homeAway, homeAway }, logo, 30, 24, 2);
             const big = document.createElement('canvas');
             big.width = 90; big.height = 90;
             const x = big.getContext('2d');
@@ -160,6 +161,22 @@
     }
 
     document.getElementById('regen').onclick = render;
+    // Save via the local dev server (tools/serve.ps1 accepts PUT /assets/logos/<CODE>.png).
+    document.getElementById('save').onclick = async () => {
+      let ok = 0, fail = 0;
+      for (const [code, image] of results) {
+        if (code.startsWith('CREST')) continue;
+        const blob = await new Promise((r) => toCanvas(image, 1).toBlob(r, 'image/png'));
+        try {
+          const res = await fetch(`../assets/logos/${code}.png`, { method: 'PUT', body: blob });
+          if (res.ok) ok++; else fail++;
+        } catch { fail++; }
+      }
+      status.textContent = fail
+        ? `Saved ${ok}, failed ${fail}. Saving needs tools/serve.ps1; otherwise use Download.`
+        : `Saved ${ok} logos to assets/logos/.`;
+    };
+
     document.getElementById('dlall').onclick = async () => {
       for (const [code, image] of results) {
         if (code.startsWith('CREST')) continue;
