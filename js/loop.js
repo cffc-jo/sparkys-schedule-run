@@ -1,7 +1,8 @@
 // requestAnimationFrame loop with a fixed-timestep accumulator.
 // update(step) always receives the same step, so physics is identical at 60Hz, 120Hz or when
 // throttled. render(alpha, frameDt) gets the leftover fraction for optional interpolation.
-export function createLoop({ step, maxFrameTime, update, render }) {
+// timeScale() (optional) speeds up / slows down game time: used by the debug speed slider.
+export function createLoop({ step, maxFrameTime, update, render, timeScale = () => 1 }) {
   let acc = 0;
   let last = -1;
   let raf = 0;
@@ -14,7 +15,7 @@ export function createLoop({ step, maxFrameTime, update, render }) {
     last = now;
     if (dt > maxFrameTime) dt = maxFrameTime;
     if (dt < 0) dt = 0;
-    acc += dt;
+    acc += dt * timeScale();
     while (acc >= step) {
       update(step);
       acc -= step;

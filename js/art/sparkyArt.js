@@ -24,6 +24,8 @@ const HEAD = [
   '.........KKKKKKKK.......',
 ];
 
+export const SPARKY_HEAD = HEAD; // used for the favicon / app icon
+
 // Swap the eye block (rows 4-9, cols 8-14) for other expressions.
 const withEyes = (eyes) => HEAD.map((row, y) => (eyes[y] ? row.slice(0, 8) + eyes[y] + row.slice(15) : row));
 const HEAD_HAPPY = withEyes({ 4: 'WWWWWWW', 5: 'WWWWWWW', 6: 'WKKWKKW', 7: 'KWWKWWK', 8: 'WWWWWWW', 9: 'WWWWWWW' });

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unit tests | Sparky's Schedule Run</title>
+  <style>
+    body { margin: 0; padding: 24px; font: 14px/1.5 system-ui, sans-serif; background: #f4f1ec; color: #160008; }
+    h1 { margin: 0 0 12px; font-size: 20px; }
+    #summary { font-weight: 600; margin-bottom: 12px; }
+    .pass { color: #1b6e2a; }
+    .fail { color: #AA0000; }
+    li { margin: 2px 0; }
+    pre { margin: 2px 0 8px 20px; white-space: pre-wrap; color: #AA0000; }
+  </style>
+</head>
+<body>
+  <h1>Unit tests</h1>
+  <div id="summary">Running…</div>
+  <ol id="list"></ol>
+  <script type="module">
+    import { tests } from './tests.js';
+    const list = document.getElementById('list');
+    let pass = 0;
+    for (const t of tests) {
+      const li = document.createElement('li');
+      try {
+        await t.fn();
+        li.className = 'pass';
+        li.textContent = `✔ ${t.name}`;
+        pass++;
+      } catch (err) {
+        li.className = 'fail';
+        li.textContent = `✘ ${t.name}`;
+        const pre = document.createElement('pre');
+        pre.textContent = err.message;
+        li.append(pre);
+      }
+      list.append(li);
+    }
+    const s = document.getElementById('summary');
+    s.textContent = `${pass} / ${tests.length} passed`;
+    s.className = pass === tests.length ? 'pass' : 'fail';
+    window.__testResult = { pass, total: tests.length };
+  </script>
+</body>
+</html>

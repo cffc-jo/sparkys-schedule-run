@@ -1,4 +1,4 @@
-// Every gameplay tunable lives here. Units: logical pixels (the 270x480 canvas) and seconds,
+// Every gameplay tunable lives here. Units: logical pixels (the 240x428 canvas) and seconds,
 // unless noted. Edit freely; nothing else in the code should hard-code these numbers.
 export const GAME = {
   view: {
@@ -20,7 +20,7 @@ export const GAME = {
     pitchDepth: 64,             // px of pitch visible between the LED boards and the running line.
                                 // Pitch (boards' foot to screen bottom) = height - groundY + pitchDepth ~= 1/3 of the screen
     sparkyX: 46,                // Sparky's fixed screen x (centre of sprite)
-    crestSize: 44,              // club crest size on the title screen and above the finish goal (logical px)
+    crestSize: 44,              // club crest size on the title screen (logical px)
     titleBoardSpeed: 24,        // px/s the LED board text scrolls on the title screen
   },
 

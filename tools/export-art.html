@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Art export | Sparky's Schedule Run</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    html, body { overflow: auto; touch-action: auto; user-select: auto; -webkit-user-select: auto; }
+    body { padding: 24px; font: 14px/1.5 system-ui, sans-serif; background: #f4f1ec; color: #160008; background-image: none; }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    p { max-width: 70ch; color: #5b5560; }
+    .item { margin: 16px 0; padding: 12px; background: #fff; border: 1px solid #d8d2c8; }
+    .item h2 { margin: 0 0 8px; font-size: 15px; }
+    canvas { image-rendering: pixelated; max-width: 100%; display: block; background: repeating-conic-gradient(#e6e1d9 0 25%, #fff 0 50%) 0 0 / 8px 8px; }
+    button { font: inherit; padding: 8px 14px; border: 0; background: #AA0000; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Art export</h1>
+  <p>Generates the game's image files from the built-in pixel art. "Save all" writes them into the project when the game is running on <code>tools/serve.ps1</code>; otherwise right-click → save each one to the path shown.</p>
+  <button id="save">Save all</button> <span id="status"></span>
+  <div id="out"></div>
+
+  <script type="module">
+    import { SPARKY_SHEET } from '../config/sprites.js';
+    import { PALETTE as P, SCENERY as S } from '../config/palette.js';
+    import { buildSparkySheet, SPARKY_HEAD } from '../js/art/sparkyArt.js';
+    import { gridToCanvas } from '../js/art/pixelArt.js';
+    import { ballFrames } from '../js/art/ballArt.js';
+    import { drawText } from '../js/pixelText.js';
+
+    await document.fonts.load('8px "Press Start 2P"');
+
+    const canvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h });
+    const upscale = (src, k, w = src.width * k, h = src.height * k) => {
+      const c = canvas(w, h);
+      const x = c.getContext('2d');
+      x.imageSmoothingEnabled = false;
+      x.drawImage(src, 0, 0, src.width * k, src.height * k);
+      return c;
+    };
+
+    // 1. Sprite sheet (same layout as config/sprites.js)
+    const sheet = buildSparkySheet(SPARKY_SHEET);
+
+    // 2. Favicon 32x32: Sparky's head
+    const head = gridToCanvas(SPARKY_HEAD);
+    const fav = canvas(32, 32);
+    fav.getContext('2d').drawImage(head, 4, 9);
+
+    // 3. Apple touch icon 180x180: head x6 on Fire red
+    const touch = canvas(180, 180);
+    {
+      const x = touch.getContext('2d');
+      x.imageSmoothingEnabled = false;
+      x.fillStyle = P.RED;
+      x.fillRect(0, 0, 180, 180);
+      x.drawImage(head, (180 - head.width * 6) / 2, (180 - head.height * 6) / 2 - 4, head.width * 6, head.height * 6);
+    }
+
+    // 4. Open Graph / Twitter image 1200x630, drawn at 300x158 and scaled x4
+    const og = canvas(1200, 630);
+    {
+      const L = canvas(300, 158);
+      const x = L.getContext('2d');
+      x.fillStyle = S.SKY_TOP; x.fillRect(0, 0, 300, 158);
+      x.fillStyle = S.SKY_MID; x.fillRect(0, 40, 300, 118);
+      x.fillStyle = S.SKY_LOW; x.fillRect(0, 85, 300, 73);
+      for (let i = 0; i < 300; i += 16) { x.fillStyle = i % 32 ? S.GRASS_A : S.GRASS_B; x.fillRect(i, 120, 16, 38); }
+      x.fillStyle = S.GRASS_TIP; x.fillRect(0, 120, 300, 1);
+      x.fillStyle = P.WHITE; x.fillRect(0, 126, 300, 1);
+      // Title banner
+      x.fillStyle = P.DARK_NAVY; x.fillRect(0, 21, 214, 78);
+      x.fillStyle = P.FIRE_RED; x.fillRect(0, 22, 212, 2);
+      x.fillStyle = P.RED; x.fillRect(0, 24, 212, 54);
+      x.fillStyle = P.DEEP_RED; x.fillRect(0, 78, 212, 16);
+      x.fillStyle = P.DARK_RED; x.fillRect(0, 94, 212, 4);
+      drawText(x, "SPARKY'S", 106, 32, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
+      drawText(x, 'SCHEDULE RUN', 106, 54, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
+      drawText(x, '2027-28 SEASON', 106, 82, { size: 8, align: 'center', color: P.FLAG_BLUE });
+      // Sparky celebrating + a power-up ball
+      const f = SPARKY_SHEET.frames.victory0;
+      x.imageSmoothingEnabled = false;
+      x.drawImage(sheet, f.x, f.y, f.w, f.h, 222, 138 - f.h * 2, f.w * 2, f.h * 2);
+      x.drawImage(ballFrames()[0], 272, 70);
+      drawText(x, 'RUN THE SEASON. REVEAL THE SCHEDULE.', 150, 145, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY, spacing: 0 });
+      const ox = og.getContext('2d');
+      ox.imageSmoothingEnabled = false;
+      ox.drawImage(L, 0, 0, 1200, 632);
+    }
+
+    const items = [
+      ['assets/sprites/sparky.png', sheet, 6],
+      ['assets/favicon.png', fav, 6],
+      ['assets/apple-touch-icon.png', touch, 1],
+      ['assets/og-image.png', og, 0.5],
+    ];
+    const out = document.getElementById('out');
+    for (const [path, c, previewScale] of items) {
+      const d = document.createElement('div');
+      d.className = 'item';
+      d.innerHTML = `<h2>${path} <small>(${c.width}×${c.height})</small></h2>`;
+      const preview = previewScale >= 1 ? upscale(c, previewScale) : c;
+      if (previewScale < 1) preview.style.width = `${c.width * previewScale}px`;
+      d.append(preview);
+      out.append(d);
+    }
+
+    document.getElementById('save').onclick = async () => {
+      let ok = 0;
+      for (const [path, c] of items) {
+        const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+        try { if ((await fetch(`../${path}`, { method: 'PUT', body: blob })).ok) ok++; } catch { /* not on the dev server */ }
+      }
+      document.getElementById('status').textContent = ok === items.length ? `Saved ${ok} files.` : `Saved ${ok}/${items.length}. Run tools/serve.ps1 to save, or right-click each image.`;
+      window.__exported = ok;
+    };
+  </script>
+</body>
+</html>

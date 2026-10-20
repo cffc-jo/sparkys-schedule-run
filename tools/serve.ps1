@@ -2,9 +2,11 @@
 #   powershell -ExecutionPolicy Bypass -File tools/serve.ps1
 # then open http://localhost:8541/
 #
-# Dev-only extra: the logo contact sheet (tools/logo-preview.html) can save regenerated logos
-# with PUT /assets/logos/<CODE>.png. Only that folder, only .png files named by club code, and
-# only on localhost. GitHub Pages is static, so none of this exists once deployed.
+# Dev-only extra: the dev tools can save generated images with PUT, limited to:
+#   /assets/logos/<CODE>.png        (tools/logo-preview.html)
+#   /assets/sprites/sparky.png, /assets/og-image.png, /assets/favicon.png,
+#   /assets/apple-touch-icon.png    (tools/export-art.html)
+# PNG files only, localhost only. GitHub Pages is static, so none of this exists once deployed.
 $root = [IO.Path]::GetFullPath((Split-Path -Parent $PSScriptRoot))
 $port = 8541
 $listener = New-Object System.Net.HttpListener
@@ -43,7 +45,7 @@ while ($listener.IsListening) {
     if (-not $filePath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
       Send-Text $res 403 "Forbidden"
     } elseif ($req.HttpMethod -eq "PUT") {
-      if ($path -cmatch '^/assets/logos/[A-Z0-9_]{1,12}\.png$') {
+      if ($path -cmatch '^/assets/(logos/[A-Z0-9_]{1,12}|sprites/sparky|og-image|favicon|apple-touch-icon)\.png$') {
         $ms = New-Object IO.MemoryStream
         $req.InputStream.CopyTo($ms)
         $bytes = $ms.ToArray()
@@ -56,7 +58,7 @@ while ($listener.IsListening) {
           Send-Text $res 400 "Not a PNG"
         }
       } else {
-        Send-Text $res 403 "Only assets/logos/<CODE>.png can be saved"
+        Send-Text $res 403 "Only the dev-tool images can be saved"
       }
     } elseif (Test-Path $filePath -PathType Leaf) {
       $ext = [IO.Path]::GetExtension($filePath).ToLower()

@@ -17,6 +17,7 @@ import { audio } from './audio/audio.js';
 import { scheduleUrl } from './links.js';
 import { track } from './analytics.js';
 import { isDebug } from './debugFlag.js';
+import { createDebugTools } from './debug.js';
 import { createTitleScene } from './scenes/title.js';
 import { createPlayScene } from './scenes/play.js';
 import { createEndScene } from './scenes/end.js';
@@ -89,12 +90,14 @@ function drawLoading() {
 const loop = createLoop({
   step: GAME.loop.fixedStep,
   maxFrameTime: GAME.loop.maxFrameTime,
+  timeScale: () => app.timeScale || 1,
   update(dt) {
     if (app.scene) app.scene.update(dt);
   },
-  render(alpha) {
+  render(alpha, frameDt) {
     if (app.scene) app.scene.render(ctx, alpha);
     else drawLoading();
+    if (app.debug) app.debug.frame(ctx, frameDt);
   },
 });
 app.loop = loop;
@@ -208,6 +211,7 @@ async function boot() {
   app.scenes.title = createTitleScene(app);
   app.scenes.play = createPlayScene(app);
   app.scenes.end = createEndScene(app);
+  if (isDebug()) app.debug = createDebugTools(app);
   frame.querySelectorAll('[data-bind-text="season"]').forEach((el) => { el.textContent = app.schedule.season; });
 
   // Phones turned to landscape show the rotate prompt; pause the run underneath it.

@@ -28,7 +28,11 @@ const GOAL = { height: 56, topDepth: 10, depth: 42, lead: 18 };
 const GLOW = [P.FIRE_RED, P.FLAG_BLUE, P.RED, P.BLUE];
 
 function vibrate(ms) {
-  try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* unsupported (iOS) */ }
+  try {
+    if (!navigator.vibrate) return; // unsupported (iOS): fail silently
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return; // needs a tap first
+    navigator.vibrate(ms);
+  } catch { /* ignore */ }
 }
 
 // Flat pixel shadow on the grass, narrower the higher the thing above it is.
@@ -218,11 +222,17 @@ export function createPlayScene(app) {
     track('game_complete', { finalTimeMs: result.finalTimeMs, rawTimeMs: result.rawTimeMs, penalties: result.penalties });
     app.audio.music(null);
     sfx('fanfare');
-    particles.burst(W / 2, 120, { count: 40, colors: [P.FIRE_RED, P.WHITE, P.FLAG_BLUE, P.RED, P.BLUE], speed: 180, up: 60, gravity: 160, life: 1.6, scroll: false });
+    if (!app.reducedMotion) {
+      particles.burst(W / 2, 120, { count: 40, colors: [P.FIRE_RED, P.WHITE, P.FLAG_BLUE, P.RED, P.BLUE], speed: 180, up: 60, gravity: 160, life: 1.6, scroll: false });
+    }
   }
 
   function step(dt) {
+    const wasAirborne = !sparky.grounded;
     sparky.update(dt);
+    if (wasAirborne && sparky.grounded && !app.reducedMotion) {
+      particles.burst(SX, GROUND - 1, { count: 6, colors: [SCENERY.GRASS_TIP, SCENERY.GRASS_A], speed: 50, up: 30, gravity: 300, life: 0.3, size: 1 });
+    }
     const sb = sparky.hitbox(dist);
     const invincible = invT > 0;
 
@@ -508,12 +518,13 @@ export function createPlayScene(app) {
 
     renderSparky(ctx) {
       shadow(ctx, SX, 18, sparky.y);
-      const visible = invT > 0 || grace <= 0 || Math.floor(grace * 16) % 2 === 0;
+      const visible = invT > 0 || grace <= 0 || Math.floor(grace * (app.reducedMotion ? 4 : 16)) % 2 === 0;
       if (!visible) return;
       const feetY = GROUND - Math.round(sparky.y);
       const warning = invT > 0 && invT <= BALL.warningSeconds;
-      const glowOn = invT > 0 && (!warning || Math.floor(invT * 10) % 2 === 0);
-      const glow = GLOW[Math.floor(t * 10) % GLOW.length];
+      const reduced = app.reducedMotion; // steady glow, no rapid flashing
+      const glowOn = invT > 0 && (!warning || reduced || Math.floor(invT * 10) % 2 === 0);
+      const glow = reduced ? (warning ? P.WHITE : P.FLAG_BLUE) : GLOW[Math.floor(t * 10) % GLOW.length];
       if (anim.name === 'spin') {
         const turns = Math.floor(sparky.spinT / 0.1) % 4;
         ctx.save();
