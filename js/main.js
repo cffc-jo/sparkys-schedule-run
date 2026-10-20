@@ -110,14 +110,14 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ---- Audio unlock on first gesture (iOS requirement) ----
+// ---- Audio unlock (browsers block sound until a user gesture) ----
+// Try on every kind of gesture until audio is running, then stop listening.
+const UNLOCK_EVENTS = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown', 'keyup'];
 const unlock = () => {
   audio.unlock();
-  window.removeEventListener('pointerdown', unlock, true);
-  window.removeEventListener('keydown', unlock, true);
+  if (audio.unlocked) UNLOCK_EVENTS.forEach((ev) => window.removeEventListener(ev, unlock, true));
 };
-window.addEventListener('pointerdown', unlock, true);
-window.addEventListener('keydown', unlock, true);
+UNLOCK_EVENTS.forEach((ev) => window.addEventListener(ev, unlock, true));
 
 // ---- Boot ----
 async function boot() {

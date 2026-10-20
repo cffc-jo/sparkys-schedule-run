@@ -20,6 +20,10 @@ function build() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return false;
   ctx = new AC();
+  // Start the requested music as soon as the browser actually lets audio run.
+  ctx.addEventListener?.('statechange', () => {
+    if (ctx.state === 'running' && wantedTrack && !musicPaused && !seq.playing) seq.play(wantedTrack);
+  });
   master = ctx.createGain();
   master.gain.value = muted ? 0 : 1;
   master.connect(ctx.destination);
@@ -50,11 +54,15 @@ export const audio = {
     listeners.add(fn);
   },
 
-  // Must run inside a user gesture (iOS / in-app webviews start the context suspended).
+  get unlocked() { return !!ctx && ctx.state === 'running'; },
+
+  // Must run inside a user gesture (browsers start audio suspended until one). Called on every
+  // click / tap / key until audio is actually running, since browsers differ on which gesture
+  // counts (Safari and some desktop settings ignore the initial press but accept the release).
   unlock() {
     try {
       if (!ctx && !build()) return;
-      if (ctx.state === 'suspended') ctx.resume();
+      if (ctx.state !== 'running') ctx.resume().catch(() => {});
       // Play one silent sample: required by older iOS to fully unlock output.
       const b = ctx.createBuffer(1, 1, 22050);
       const s = ctx.createBufferSource();
@@ -69,7 +77,8 @@ export const audio = {
 
   // Fire-and-forget sound effect. `delay` in seconds.
   play(name, delay = 0) {
-    if (!ctx || ctx.state !== 'running') return;
+    if (!ctx || ctx.state === 'closed') return;
+    if (ctx.state !== 'running') ctx.resume().catch(() => {}); // plays as soon as it's allowed
     const fn = SFX[name];
     if (!fn) return;
     try { fn(ctx, sfxBus, ctx.currentTime + 0.005 + delay); } catch { /* ignore */ }
