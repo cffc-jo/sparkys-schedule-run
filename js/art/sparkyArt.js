@@ -1,30 +1,33 @@
-// Built-in Sparky pixel art (24x30 per frame, facing right). Used to generate the sprite sheet
+// Built-in Sparky pixel art (24x32 per frame, facing right). Used to generate the sprite sheet
 // when assets/sprites/sparky.png is missing. Frames are composed from layers: head, arm, torso, legs.
-// Key: K outline/black fur, N sheen, W white fur/chest band, R/F/D jersey, '.' transparent.
+// Modelled on the club's cartoon Sparky: white Dalmatian, floppy spotted ears, big friendly eyes,
+// black nose, wide grin, black fists. Kit stays the red home jersey with a plain white band.
+// Key: K outline/black fur, W white fur/chest band, R/F/D jersey, '.' transparent.
 import { drawGrid } from './pixelArt.js';
 
-// Dalmatian head in profile: round white skull, small black crown patch, floppy black ear,
-// kind eye, boxy white muzzle with a round black nose, upturned smile and a little tongue.
-const pad = (rows) => rows.map((r) => '....' + r + '...');
-const HEAD = pad([
-  '.....KKKKK.......',
-  '...KKKKKWWWK.....',
-  '..KKKKKWWWKKWK...',
-  '.KKNKKWWWWKWWWKKK',
-  '.KKNKWWWWWKKWWKKK',
-  '.KKNKWWWWWWWWWWKK',
-  '.KKNKWWWWWKWWWWWK',
-  '.KKNKWWWWWWKKKKKK',
-  '..KKKWWKWWWWFFK..',
-  '...KKKWWWWWWKK...',
-  '.....KKWWWWK.....',
-  '......KWWWWK.....',
-]);
+// 3/4 head turned to the right: two floppy white ears with black spots flopping out to each
+// side, black spot on the crown, two big oval eyes glancing forward, black nose, big grin.
+const HEAD = [
+  '.........KKKKKK.........',
+  '.......KKKKWWWWKK.......',
+  '..KKKKKWWWWWWWWWWKKKK...',
+  '.KWWWWKWWWWWWWWWWKWWWK..',
+  'KWWKKWKWWKKWKKWWWKWKWK..',
+  'KWWWWKKWKWWKWWKWWKKKK...',
+  '.KWWK.KWKWKKWKKWWWK.....',
+  '..KK..KWKWKKWKKWWWWK....',
+  '......KWKWWKWWKKKKWK....',
+  '......KWWKKWKKWKKKWK....',
+  '......KWWKWWWWWWKWWK....',
+  '.......KWWKKKKKKWWK.....',
+  '........KWWFFWWWWK......',
+  '.........KKKKKKKK.......',
+];
 
-// Swap the eye block (rows 2-4, cols 13-16) for other expressions.
-const withEyes = (eyes) => HEAD.map((row, y) => (eyes[y] ? row.slice(0, 13) + eyes[y] + row.slice(17) : row));
-const HEAD_HAPPY = withEyes({ 2: 'WWWW', 3: 'WKKW', 4: 'KWWK' });
-const HEAD_DIZZY = withEyes({ 2: 'WKWK', 3: 'WWKW', 4: 'WKWK' });
+// Swap the eye block (rows 4-9, cols 8-14) for other expressions.
+const withEyes = (eyes) => HEAD.map((row, y) => (eyes[y] ? row.slice(0, 8) + eyes[y] + row.slice(15) : row));
+const HEAD_HAPPY = withEyes({ 4: 'WWWWWWW', 5: 'WWWWWWW', 6: 'WKKWKKW', 7: 'KWWKWWK', 8: 'WWWWWWW', 9: 'WWWWWWW' });
+const HEAD_DIZZY = withEyes({ 4: 'WWWWWWW', 5: 'KWKWKWK', 6: 'WKWWWKW', 7: 'KWKWKWK', 8: 'WWWWWWW', 9: 'WWWWWWW' });
 
 // Athletic side-on torso: broad shoulders, narrow waist. Red home jersey, plain white chest band.
 const TORSO = [
@@ -40,12 +43,12 @@ const TORSO = [
 ];
 
 // Arms: white fur with a black spot, placed at the shoulder.
-const ARM_DOWN = { x: 12, y: 13, art: ['KKK', 'KWK', 'KWK', 'KWK', 'KWK', 'KKK'] };
-const ARM_FWD = { x: 13, y: 13, art: ['KKKK...', 'KWWKKK.', '.KKWWWK', '...KKKK'] };
-const ARM_BACK = { x: 5, y: 13, art: ['...KKKK', '.KKKWWK', 'KWWWKK.', 'KKKK...'] };
-const ARM_UP = { x: 5, y: 4, art: ['.KK....', 'KWWK...', 'KWWK...', 'KWKK...', 'KWWK...', '.KWWK..', '..KWWK.', '...KWWK', '....KWK'] };
+const ARM_DOWN = { x: 12, y: 15, art: ['KKK', 'KWK', 'KWK', 'KWK', 'KKK', 'KKK'] };
+const ARM_FWD = { x: 13, y: 15, art: ['KKKK...', 'KWWKKKK', '.KKWKKK', '...KKKK'] };
+const ARM_BACK = { x: 5, y: 15, art: ['...KKKK', 'KKKKWWK', 'KKKWKK.', 'KKKK...'] };
+const ARM_UP = { x: 16, y: 5, art: ['....KKKK', '....KKKK', '....KKKK', '....KWK.', '....KWK.', '...KWK..', '...KWK..', '..KWK...', '.KWK....', 'KWK.....'] };
 
-// Legs (rows 21-29): strong thighs, white spotted legs, dark cleats.
+// Legs (rows 23-31): strong thighs, white spotted legs, dark cleats.
 const LEGS_STAND = [
   '..........KWWKWWK.......',
   '..........KWWKWWK.......',
@@ -87,7 +90,7 @@ const LEGS_TUCK = [
   '............KKKKK.......',
 ];
 
-// Crouch: head lowered and pushed forward onto a squashed body (18px tall).
+// Crouch: body tucked low behind the lowered head (15px tall, well under floating boxes).
 const DUCK_BODY = [
   '........KFRRRRRRDK......',
   '........KWWWWWWWWK......',
@@ -99,7 +102,7 @@ const DUCK_BODY = [
   '......KKKKK....KKKKK....',
 ];
 
-const W = 24, H = 30;
+const W = 24, H = 32;
 
 function compose(layers) {
   const grid = Array.from({ length: H }, () => Array(W).fill('.'));
@@ -118,7 +121,7 @@ function compose(layers) {
 const body = (head, legs, arm) => {
   const layers = [];
   if (arm === ARM_BACK) layers.push(arm);
-  layers.push({ art: head }, { art: TORSO, y: 12 }, { art: legs, y: 21 });
+  layers.push({ art: head, y: 1 }, { art: TORSO, y: 14 }, { art: legs, y: 23 });
   if (arm && arm !== ARM_BACK) layers.push(arm);
   return compose(layers);
 };
@@ -132,7 +135,7 @@ export const SPARKY_ART = {
   run3: body(HEAD, LEGS_PASS, ARM_DOWN),
   jump: body(HEAD, LEGS_TUCK, ARM_FWD),
   spin: body(HEAD_HAPPY, LEGS_TUCK, ARM_FWD),
-  duck: compose([{ art: HEAD, x: 2, y: 12 }, { art: DUCK_BODY, y: 22 }]),
+  duck: compose([{ art: DUCK_BODY, x: -3, y: 24 }, { art: HEAD, x: 1, y: 17 }]),
   hit: body(HEAD_DIZZY, LEGS_PASS, ARM_BACK),
   victory0: body(HEAD_HAPPY, LEGS_STAND, ARM_UP),
   victory1: body(HEAD_HAPPY, LEGS_TUCK, ARM_UP),
