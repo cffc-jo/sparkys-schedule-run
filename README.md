@@ -78,7 +78,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
    | `code` | Club code. It's the logo file name and the fallback label if a logo is missing. |
    | `logo` | `assets/logos/<CODE>.png`. **Case matters on GitHub Pages:** `MIA.png` ≠ `mia.png`. |
    | `homeAway` | `HOME` or `AWAY`. Home boxes have a solid red frame; away boxes a dashed sky-blue frame. |
-   | `date` | `YYYY-MM-DD` (shown as "SAT, AUG 21"), or any text such as `"TBD"` (shown as typed). |
+   | `date` | `YYYY-MM-DD` (shown as "SAT, AUG 21"), or any text such as `"TBD"` (shown as typed). The date also sets the **season** of the scenery after that box (see below). |
 
    - The number of boxes comes from `matches.length`, so any number of matches works.
    - Opponents the Fire play more than once simply appear more than once.
@@ -209,6 +209,7 @@ They cover:
 - course rules: one box per match, the type mix, easy start, no early hard back-to-back, deterministic layout, any schedule length
 - jump physics against obstacle heights
 - ball placement
+- season boundaries
 
 ## Tunable config values
 
@@ -274,7 +275,7 @@ Other config files:
 | File | Contents |
 |---|---|
 | `config/schedule.json` | Season and matches |
-| `config/palette.js` | Official club colours (`PALETTE`) and approved background-only scenery colours (`SCENERY`) |
+| `config/palette.js` | Official club colours (`PALETTE`) and approved background-only scenery colours per season (`SEASONS`: winter, spring, summer, fall, including weather) |
 | `config/sprites.js` | Sparky frame map and hitboxes |
 | `config/links.js` | Schedule URL, UTM tags, game URL, share text |
 
@@ -330,6 +331,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Hitting a box adds **exactly +10.0 s**, with a "+10" pop, shake, stumble, buzz on Android, and about 1 s of flicker with no second penalty.
 - [ ] Every box, cleared or hit, shows the reveal banner with logo, match number, HOME/AWAY, opponent and date. Long names wrap.
 - [ ] Clearing boxes gradually speeds the run up.
+- [ ] The scenery changes season as boxes pass, following each match date: winter (snowy pitch, snowfall) → spring (flowers, petals) → summer → fall (olive-gold grass, falling leaves). Each change crossfades over about 2 s. With reduced motion there's no weather and changes are instant.
 - [ ] Soccer balls: collecting one gives a glow, a draining meter, faster music and 5 s of invincibility. Boxes shatter with no penalty and still reveal. Collecting another resets the meter to 5 s. The meter blinks in the last second.
 - [ ] All 5 balls can be collected in a clean run without hitting anything.
 - [ ] A clean run finishes in about 45–60 s. The current course is about 0:54.
@@ -365,6 +367,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - **Scaling:** whole-number device-pixel scaling is used when it fills ≥ 88% of the screen. Otherwise the game fills the screen with pixelated scaling, since strict whole numbers left the game at about 75% size on many phones.
 - **Logo downscaling** averages pixels rather than using pure nearest-neighbour, because nearest-neighbour drops thin lettering. Colours are then snapped to each logo's palette, so the result is still hard-edged pixel art. Use `--resample nearest` to switch back.
 - **Spacing:** each gap is sized for the fastest speed the player could possibly have reached at that point (a clean run so far, capped). Speed only rises with clears, so anyone who has been hit is slower and gets *more* time. This keeps a perfect run in the 45–60 s target while every gap still guarantees `reactionGap` seconds.
+- **Seasons:** as Sparky passes each box, the sky, clouds, sun and pitch take on the season of that match's date (`js/season.js`): winter until Mar 19, spring Mar 20–Jun 20, summer Jun 21–Sep 21, fall Sep 22–Nov 20, then winter again (equinox and solstice dates split the overlapping months). The title and the start of a run use the first dated match's season. Undated (`TBD`) matches keep the current season. Colours and weather for each season are in `SEASONS` in `config/palette.js`.
 - **Floating boxes hang from a cable** so they can only be ducked, never jumped over.
 - **Swipe down on the ground** briefly starts a hop, because jump fires instantly on touch. It then slams back down and ducks within about 20 ms.
 - **Placeholder schedule:** the 2026 Chicago Fire regular season, from the MLS stats API, matching the club's schedule release except Vancouver (moved). Two matches were changed after release: **Vancouver (match 27)** moved to Oct 6 because of wildfire smoke, and **Columbus (match 34)** moved venue to SeatGeek Stadium. Replace the whole file at release.

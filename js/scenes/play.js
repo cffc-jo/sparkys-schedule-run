@@ -1,6 +1,6 @@
 // The run: countdown → running → celebrate/complete. Pausable at any point before the finish.
 import { GAME } from '../../config/game.js';
-import { PALETTE as P, SCENERY } from '../../config/palette.js';
+import { PALETTE as P } from '../../config/palette.js';
 import { SPARKY_SHEET } from '../../config/sprites.js';
 import { drawText } from '../pixelText.js';
 import { createAnimator } from '../sprite.js';
@@ -16,6 +16,7 @@ import { createInput } from '../input/input.js';
 import { track } from '../analytics.js';
 import { isDebug } from '../debugFlag.js';
 import { recordRun } from '../best.js';
+import { seasonForDate, openingSeason } from '../season.js';
 
 const W = GAME.view.width;
 const GROUND = GAME.world.groundY;
@@ -36,9 +37,9 @@ function vibrate(ms) {
 }
 
 // Flat pixel shadow on the grass, narrower the higher the thing above it is.
-function shadow(ctx, cx, width, height) {
+function shadow(ctx, cx, width, height, color) {
   const w = Math.max(4, Math.round(width - height / 6));
-  ctx.fillStyle = SCENERY.GRASS_DEEP;
+  ctx.fillStyle = color;
   ctx.fillRect(Math.round(cx - w / 2), GROUND, w, 2);
   ctx.fillRect(Math.round(cx - w / 2) + 2, GROUND + 2, w - 4, 1);
 }
@@ -121,6 +122,7 @@ export function createPlayScene(app) {
     result = null;
     particles.clear();
     banner.clear();
+    app.bg.setSeason(openingSeason(app.schedule.matches), { instant: true });
     sparky.reset();
     timer.reset();
     boxes = course.obstacles.map((ob) => ({
@@ -161,9 +163,12 @@ export function createPlayScene(app) {
     return ob.type === 'tall' ? OB.tallCrateHeight : ob.type === 'floating' ? OB.floatingBottom : 0;
   }
 
-  // Every box reveals its match, whether cleared, shattered or hit.
+  // Every box reveals its match, whether cleared, shattered or hit, and the scenery moves on to
+  // that match's season.
   function reveal(b) {
     banner.show(b.ob.match, b.art);
+    const season = seasonForDate(b.ob.match.date);
+    if (season) app.bg.setSeason(season);
   }
 
   function clearBox(b) {
@@ -231,7 +236,8 @@ export function createPlayScene(app) {
     const wasAirborne = !sparky.grounded;
     sparky.update(dt);
     if (wasAirborne && sparky.grounded && !app.reducedMotion) {
-      particles.burst(SX, GROUND - 1, { count: 6, colors: [SCENERY.GRASS_TIP, SCENERY.GRASS_A], speed: 50, up: 30, gravity: 300, life: 0.3, size: 1 });
+      const sc = app.bg.scenery;
+      particles.burst(SX, GROUND - 1, { count: 6, colors: [sc.GRASS_TIP, sc.GRASS_A], speed: 50, up: 30, gravity: 300, life: 0.3, size: 1 });
     }
     const sb = sparky.hitbox(dist);
     const invincible = invT > 0;
@@ -470,7 +476,7 @@ export function createPlayScene(app) {
         if (sx + ob.w < -10) continue;
         const wave = Math.sin(t * OB.bobSpeed + b.phase);
         const gone = b.state === 'hit' || b.shattered;
-        if (!gone || ob.type === 'tall') shadow(ctx, sx + ob.w / 2, ob.w + 4, ob.type === 'floating' ? OB.floatingBottom : 0);
+        if (!gone || ob.type === 'tall') shadow(ctx, sx + ob.w / 2, ob.w + 4, ob.type === 'floating' ? OB.floatingBottom : 0, app.bg.scenery.GRASS_DEEP);
         let drawBottom;
         if (ob.type === 'floating') {
           drawBottom = OB.floatingBottom + Math.round(wave * amp);
@@ -500,7 +506,7 @@ export function createPlayScene(app) {
         if (sx < -BALL.size || sx > W + BALL.size) continue;
         const bob = reduced ? 0 : Math.round(Math.sin(t * 3 + ball.phase) * BALL.bobAmplitude);
         const cy = GROUND - ball.y + bob;
-        shadow(ctx, sx, BALL.size, ball.y - r);
+        shadow(ctx, sx, BALL.size, ball.y - r, app.bg.scenery.GRASS_DEEP);
         const frame = balls[reduced ? 0 : Math.floor(t * BALL.spinFps + ball.phase) % 4];
         ctx.drawImage(frame, sx - r, cy - r);
         // Sparkle: a twinkling pixel star that hops around the ball
@@ -517,7 +523,7 @@ export function createPlayScene(app) {
     },
 
     renderSparky(ctx) {
-      shadow(ctx, SX, 18, sparky.y);
+      shadow(ctx, SX, 18, sparky.y, app.bg.scenery.GRASS_DEEP);
       const visible = invT > 0 || grace <= 0 || Math.floor(grace * (app.reducedMotion ? 4 : 16)) % 2 === 0;
       if (!visible) return;
       const feetY = GROUND - Math.round(sparky.y);

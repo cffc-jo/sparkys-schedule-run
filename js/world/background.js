@@ -1,6 +1,8 @@
 // Daytime match backdrop: sky, sun and clouds, two-layer Chicago skyline, red pitch-side LED
-// boards and a mowed grass pitch. Layers are pre-rendered once and scrolled with parallax.
-import { PALETTE as P, SCENERY as S } from '../../config/palette.js';
+// boards and a mowed grass pitch. Layers are pre-rendered and scrolled with parallax.
+// The sky, clouds and pitch follow the seasons (setSeason), crossfading over a couple of seconds,
+// with light weather on top: snow in winter, petals in spring, leaves in fall.
+import { PALETTE as P, SEASONS } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { textSprite } from '../pixelText.js';
 
@@ -33,7 +35,10 @@ function ditherOn(x, y, t) {
   return t > m;
 }
 
-function buildSky() {
+const S = SEASONS.summer; // the skyline is the same all year
+const FADE_SECONDS = 2;
+
+function buildSky(S) {
   const h = BOARD_TOP;
   const c = makeCanvas(W, h);
   const x = c.getContext('2d');
@@ -64,7 +69,7 @@ function buildSky() {
   return c;
 }
 
-function buildCloud(r, w, h) {
+function buildCloud(r, w, h, S) {
   const c = makeCanvas(w, h);
   const x = c.getContext('2d');
   const puffs = [];
@@ -84,14 +89,20 @@ function buildCloud(r, w, h) {
   return c;
 }
 
-function buildClouds() {
+// Cloud positions are shared by every season; only their colours change.
+function cloudLayout() {
   const r = rng(42);
   const clouds = [];
   for (let i = 0; i < 5; i++) {
     const w = 30 + Math.floor(r() * 30);
-    clouds.push({ img: buildCloud(r, w, 12 + Math.floor(r() * 8)), x: r() * (W + 80), y: 20 + Math.floor(r() * 140), speed: 4 + r() * 6 });
+    const h = 12 + Math.floor(r() * 8);
+    clouds.push({ w, h, seed: Math.floor(r() * 1e9), x: r() * (W + 80), y: 20 + Math.floor(r() * 140), speed: 4 + r() * 6 });
   }
   return clouds;
+}
+
+function buildCloudImages(layout, S) {
+  return layout.map((cl) => buildCloud(rng(cl.seed), cl.w, cl.h, S));
 }
 
 function windows(x, r, bx, top, bw, base, color, density) {
@@ -173,7 +184,7 @@ function buildNearCity() {
 
 // Mowed pitch tile from the foot of the boards to the bottom of the screen.
 // Sparky's running line (GROUND) is part-way down, so grass shows behind his legs.
-function buildGroundTile() {
+function buildGroundTile(S) {
   const tw = 32;
   const th = H - PITCH_TOP;
   const run = GROUND - PITCH_TOP; // running line, relative to the tile
@@ -185,7 +196,7 @@ function buildGroundTile() {
     x.fillRect(px, 0, 1, 2);
     x.fillStyle = stripe;
     x.fillRect(px, 2, 1, run + 16);
-    x.fillStyle = P.WHITE; // far touchline
+    x.fillStyle = S.LINE || P.WHITE; // far touchline
     x.fillRect(px, 6, 1, 1);
     x.fillRect(px, run + 18, 1, 2); // near touchline, just in front of Sparky
     // Pitch-side strip: darker stripes, fading slightly toward the bottom edge
@@ -203,18 +214,81 @@ function buildGroundTile() {
     x.fillRect(tx + 2, ty, 1, 1);
     x.fillRect(tx + 1, ty - 1, 1, 1);
   }
+  // Seasonal specks: snow patches, spring flowers, fallen leaves
+  if (S.SPECKS.length) {
+    const r = rng(9);
+    for (let i = 0; i < 9; i++) {
+      const sx = Math.floor(r() * (tw - 2));
+      const sy = 3 + Math.floor(r() * (th - 6));
+      if (sy >= run + 17 && sy <= run + 20) continue; // keep the touchline clean
+      x.fillStyle = S.SPECKS[i % S.SPECKS.length];
+      x.fillRect(sx, sy, S === SEASONS.winter ? 2 : 1, 1);
+    }
+  }
   return c;
 }
 
 const BOARD_TEXT = '  CHICAGO FIRE FC  ·  SPARKY\'S SCHEDULE RUN  ·  ';
 
-export function createBackground() {
-  const sky = buildSky();
-  const clouds = buildClouds();
+export function createBackground({ reducedMotion = () => false } = {}) {
+  const clouds = cloudLayout();
   const farCity = buildFarCity();
   const nearCity = buildNearCity();
-  const ground = buildGroundTile();
+  const looks = {}; // season -> { sky, clouds[], ground }, built on first use
+  const look = (name) => looks[name] || (looks[name] = {
+    sky: buildSky(SEASONS[name]),
+    clouds: buildCloudImages(clouds, SEASONS[name]),
+    ground: buildGroundTile(SEASONS[name]),
+  });
+  const ground = look('summer').ground; // tile size is the same for every season
   const state = { far: 0, near: 0, groundX: 0, boardX: 0 };
+  let season = 'summer';
+  let prevSeason = null; // fading out
+  let fade = 1;          // 0..1 progress of the current crossfade
+  let flakes = [];       // weather particles
+  let spawnAcc = 0;
+
+  function drawLayer(ctx, name, alpha) {
+    const l = look(name);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(l.sky, 0, 0);
+    clouds.forEach((cl, i) => ctx.drawImage(l.clouds[i], Math.round(cl.x), cl.y));
+    ctx.globalAlpha = 1;
+  }
+
+  function drawGround(ctx, name, alpha) {
+    const tile = look(name).ground;
+    ctx.globalAlpha = alpha;
+    const gx = Math.floor(state.groundX);
+    for (let x = -gx; x < W; x += tile.width) ctx.drawImage(tile, x, PITCH_TOP);
+    ctx.globalAlpha = 1;
+  }
+
+  function updateWeather(dt, speed) {
+    const w = SEASONS[season].WEATHER;
+    if (w && !reducedMotion()) {
+      spawnAcc += w.rate * dt * fade;
+      while (spawnAcc >= 1 && flakes.length < 90) {
+        spawnAcc -= 1;
+        flakes.push({
+          kind: w.kind,
+          x: Math.random() * (W + 60),
+          y: -4,
+          vy: w.kind === 'snow' ? 18 + Math.random() * 16 : 22 + Math.random() * 14,
+          vx: w.kind === 'snow' ? -6 - Math.random() * 6 : -14 - Math.random() * 14,
+          phase: Math.random() * 6.28,
+          color: w.colors[Math.floor(Math.random() * w.colors.length)],
+          size: w.kind === 'leaf' ? 2 : 1,
+        });
+      }
+    }
+    for (const f of flakes) {
+      f.phase += dt * (f.kind === 'snow' ? 2 : 3.5);
+      f.x += (f.vx - speed * 0.35 + Math.sin(f.phase) * (f.kind === 'snow' ? 8 : 18)) * dt;
+      f.y += f.vy * dt;
+    }
+    flakes = flakes.filter((f) => f.y < H && f.x > -10);
+  }
 
   const wrap = (v, m) => ((v % m) + m) % m;
 
@@ -227,13 +301,40 @@ export function createBackground() {
       state.boardX += (boardSpeed + speed) * dt;
       for (const cl of clouds) {
         cl.x -= (cl.speed + speed * 0.03) * dt;
-        if (cl.x < -cl.img.width) cl.x += W + cl.img.width + 40;
+        if (cl.x < -cl.w) cl.x += W + cl.w + 40;
       }
+      if (fade < 1) {
+        fade = Math.min(1, fade + dt / FADE_SECONDS);
+        if (fade >= 1) prevSeason = null;
+      }
+      updateWeather(dt, speed);
     },
 
+    // Switch to 'winter' | 'spring' | 'summer' | 'fall'. Crossfades unless `instant`.
+    setSeason(name, { instant = false } = {}) {
+      if (!SEASONS[name] || name === season) return;
+      if (instant || reducedMotion()) {
+        prevSeason = null;
+        fade = 1;
+        flakes = [];
+      } else {
+        prevSeason = season;
+        fade = 0;
+      }
+      season = name;
+      look(name); // make sure it's built before it's drawn
+    },
+    get season() { return season; },
+    // Current scenery colours (e.g. for shadows on the grass)
+    get scenery() { return SEASONS[season]; },
+
     render(ctx) {
-      ctx.drawImage(sky, 0, 0);
-      for (const cl of clouds) ctx.drawImage(cl.img, Math.round(cl.x), cl.y);
+      if (prevSeason) {
+        drawLayer(ctx, prevSeason, 1);
+        drawLayer(ctx, season, fade);
+      } else {
+        drawLayer(ctx, season, 1);
+      }
 
       const fx = Math.floor(state.far);
       ctx.drawImage(farCity, -fx, BOARD_TOP - farCity.height);
@@ -254,8 +355,18 @@ export function createBackground() {
       for (let lx = -off; lx < W; lx += label.width) ctx.drawImage(label, lx, BOARD_TOP + 5);
 
       // Grass
-      const gx = Math.floor(state.groundX);
-      for (let x = -gx; x < W; x += ground.width) ctx.drawImage(ground, x, PITCH_TOP);
+      if (prevSeason) {
+        drawGround(ctx, prevSeason, 1);
+        drawGround(ctx, season, fade);
+      } else {
+        drawGround(ctx, season, 1);
+      }
+
+      // Weather (snow / petals / leaves), drifting with the wind and the run
+      for (const f of flakes) {
+        ctx.fillStyle = f.color;
+        ctx.fillRect(Math.round(f.x), Math.round(f.y), f.size, f.size);
+      }
     },
 
     get groundY() { return GROUND; },

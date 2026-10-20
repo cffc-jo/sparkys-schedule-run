@@ -168,7 +168,7 @@ async function boot() {
   app.logos = logos;
   app.sheet = createSpriteSheet(assets.sparky || buildSparkySheet(SPARKY_SHEET), SPARKY_SHEET);
   app.crest = assets.chi || (assets.crest ? pixelateImage(assets.crest, GAME.world.crestSize * GAME.view.renderScale) : null);
-  app.bg = createBackground();
+  app.bg = createBackground({ reducedMotion: () => app.reducedMotion });
 
   // DOM: bind config values into the instructions, icons, links
   frame.querySelectorAll('[data-bind]').forEach((el) => {

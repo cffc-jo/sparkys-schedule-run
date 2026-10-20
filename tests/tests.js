@@ -8,6 +8,7 @@ import { classifyGesture } from '../js/input/gesture.js';
 import { buildCourse, recoverTime, assignTypes, createRng } from '../js/course.js';
 import { createSparky } from '../js/game/sparky.js';
 import { SPARKY_SHEET } from '../config/sprites.js';
+import { seasonForDate, openingSeason } from '../js/season.js';
 
 export const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -181,4 +182,23 @@ test('balls: configured count, never on a tall box, low balls clear of their box
     ok(ob.type !== 'tall', 'ball on a tall box');
     if (ob.type === 'floating') ok(b.x + GAME.balls.size / 2 < ob.x, 'low ball overlaps its floating box');
   }
+});
+
+// ---------- Seasons ----------
+test('seasons: winter Jan-Mar, spring Mar-Jun, summer Jun-Sep, fall Sep-Nov, winter Nov-Dec', () => {
+  const cases = {
+    '2026-01-05': 'winter', '2026-02-21': 'winter', '2026-03-19': 'winter',
+    '2026-03-20': 'spring', '2026-05-23': 'spring', '2026-06-20': 'spring',
+    '2026-06-21': 'summer', '2026-08-01': 'summer', '2026-09-21': 'summer',
+    '2026-09-22': 'fall', '2026-10-31': 'fall', '2026-11-20': 'fall',
+    '2026-11-21': 'winter', '2026-12-31': 'winter',
+  };
+  for (const [d, want] of Object.entries(cases)) eq(seasonForDate(d), want, d);
+});
+test('seasons: undated matches keep the current season; opening season = first dated match', () => {
+  eq(seasonForDate('TBD'), null);
+  eq(seasonForDate(''), null);
+  eq(openingSeason([{ date: 'TBD' }, { date: '2027-08-21' }]), 'summer');
+  eq(openingSeason([{ date: 'TBD' }]), 'summer');
+  eq(openingSeason([{ date: '2026-02-21' }]), 'winter');
 });
