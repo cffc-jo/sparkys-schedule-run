@@ -45,6 +45,7 @@ const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 const app = {
   renderer,
+  audio,
   reducedMotion: reducedMotionQuery.matches,
   scene: null,
   scenes: {},
@@ -100,8 +101,10 @@ loop.start();
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     if (app.scene && app.scene.onHide) app.scene.onHide();
+    audio.suspend();
     loop.stop();
   } else {
+    audio.wake();
     loop.resetClock();
     loop.start();
   }
@@ -169,6 +172,8 @@ async function boot() {
     pause: () => app.scene && app.scene.togglePause && app.scene.togglePause(),
   });
   app.ui.setMuted(audio.muted);
+  // UI click sound for every button/link
+  frame.addEventListener('click', (e) => { if (e.target.closest('[data-action]')) audio.play('click'); });
   audio.onMuteChange((m) => app.ui.setMuted(m));
 
   app.scenes.title = createTitleScene(app);

@@ -131,6 +131,7 @@ export function createPlayScene(app) {
     if (paused || (phase !== 'countdown' && phase !== 'run')) return;
     paused = true;
     timer.stop();
+    app.audio.pauseMusic();
     app.ui.showScreen('pause', { focus: true });
   }
 
@@ -138,6 +139,7 @@ export function createPlayScene(app) {
     if (!paused) return;
     paused = false;
     if (phase === 'run') timer.start();
+    app.audio.resumeMusic();
     app.ui.showScreen('play');
     // Drop focus from menu buttons so Space jumps instead of re-pressing a button.
     if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
@@ -187,6 +189,7 @@ export function createPlayScene(app) {
     sparky.stumble(GAME.physics.hitStumbleTime);
     popups.push({ text: `+${GAME.penalties.penaltySeconds}`, x: SX, y: GROUND - sparky.y - 44, age: 0 });
     sfx('hit');
+    app.audio.play('penalty', 0.14);
     vibrate(60);
   }
 
@@ -196,6 +199,8 @@ export function createPlayScene(app) {
     particles.burst(SX + (ball.x - dist), GROUND - ball.y, { count: 14, colors: [P.WHITE, P.FLAG_BLUE, P.FIRE_RED], speed: 110, gravity: 120, life: 0.5 });
     popups.push({ text: 'POWER UP!', x: SX, y: GROUND - sparky.y - 44, age: 0, small: true });
     sfx('collect');
+    sfx('invincibleStart');
+    app.audio.setTempo(1.25);
     vibrate(30);
   }
 
@@ -208,6 +213,7 @@ export function createPlayScene(app) {
     app.lastResult = result;
     app.ui.setPauseVisible(false);
     track('game_complete', { finalTimeMs: result.finalTimeMs, rawTimeMs: result.rawTimeMs, penalties: result.penalties });
+    app.audio.music(null);
     sfx('fanfare');
     particles.burst(W / 2, 120, { count: 40, colors: [P.FIRE_RED, P.WHITE, P.FLAG_BLUE, P.RED, P.BLUE], speed: 180, up: 60, gravity: 160, life: 1.6, scroll: false });
   }
@@ -244,8 +250,10 @@ export function createPlayScene(app) {
     grace = Math.max(0, grace - dt);
     shake = Math.max(0, shake - dt);
     const wasWarning = invT > 0 && invT <= BALL.warningSeconds;
+    const wasInvincible = invT > 0;
     invT = Math.max(0, invT - dt);
     if (!wasWarning && invT > 0 && invT <= BALL.warningSeconds) sfx('invincibleEnding');
+    if (wasInvincible && invT === 0) app.audio.setTempo(1);
     for (const p of popups) { p.age += dt; p.y -= 30 * dt; }
     popups = popups.filter((p) => p.age < 0.9);
     for (const d of debris) {
@@ -278,6 +286,8 @@ export function createPlayScene(app) {
       app.ui.showScreen('play');
       app.ui.setPauseVisible(true);
       input.enabled = true;
+      app.audio.music(null); // countdown beeps play over silence; the theme starts on GO
+      sfx('beep'); // the "3"
       track('game_start', { matches: total });
     },
 
@@ -306,6 +316,7 @@ export function createPlayScene(app) {
         if (countT >= GAME.ui.countdownStepSeconds * 3) {
           phase = 'run';
           timer.start();
+          app.audio.music('game');
         }
       } else if (phase === 'run') {
         worldSpeed = speed;
@@ -322,6 +333,7 @@ export function createPlayScene(app) {
         }
         if (celebrateT >= GAME.ui.celebrateSeconds) {
           phase = 'done';
+          app.audio.music('title');
           app.ui.showScreen('complete', { focus: false });
         }
       }

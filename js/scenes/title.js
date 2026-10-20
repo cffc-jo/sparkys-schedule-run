@@ -14,6 +14,7 @@ export function createTitleScene(app) {
       anim.play('idle', true);
       app.ui.showScreen('title');
       app.ui.setPauseVisible(false);
+      app.audio.music('title');
     },
 
     update(dt) {
