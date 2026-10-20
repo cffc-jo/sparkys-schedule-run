@@ -53,8 +53,8 @@ export function createTitleScene(app) {
       drawText(ctx, 'SCHEDULE RUN', cx, by + 30, { size: 16, align: 'center', color: P.WHITE, shadow: P.DARK_RED, shadowOffset: 2 });
       drawText(ctx, `${app.schedule.season} SEASON`, cx, by + 58, { size: 8, align: 'center', color: P.FLAG_BLUE });
 
-      drawText(ctx, 'RUN THE SEASON.', cx, 242, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
-      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 256, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'RUN THE SEASON.', cx, 372, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
+      drawText(ctx, 'REVEAL THE SCHEDULE.', cx, 386, { size: 8, align: 'center', color: P.WHITE, outline: P.DARK_NAVY });
 
       // Sparky idles on the pitch at 2x for the showcase
       const bob = app.reducedMotion ? 0 : Math.round(Math.sin(t * 3) * 1);

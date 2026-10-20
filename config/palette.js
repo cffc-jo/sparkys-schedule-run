@@ -24,6 +24,18 @@ const CITY = {
   CITY_NEAR:     '#6A8AAB',
   CITY_NEAR_WIN: '#A3C3DD',
   CITY_DARK:     '#4C6684',
+  // Landmarks
+  WRIGLEY:       '#F4F0E6', // white glazed terra cotta
+  WRIGLEY_SHADE: '#D6CEBE',
+  WRIGLEY_WIN:   '#93A9BF',
+  CLOCK_HANDS:   '#2B2B33',
+  STADIUM_BRICK: '#8C3B2E', // McDonald's Park: brick-and-glass volumes...
+  STADIUM_BRICK_DARK: '#6E2C23',
+  STADIUM_GLASS: '#A9CDE3',
+  STADIUM_METAL: '#353A45', // ...dark industrial metal entry wall...
+  STADIUM_METAL_RIB: '#4C5361',
+  STADIUM_STEEL: '#D3D8DF', // ...under a rising steel canopy
+  STADIUM_STEEL_DARK: '#9AA3AF',
 };
 
 export const SEASONS = Object.freeze({
