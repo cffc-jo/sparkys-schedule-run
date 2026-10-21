@@ -348,7 +348,7 @@ export function createBackground({ reducedMotion = () => false } = {}) {
   const state = { far: 0, near: 0, groundX: 0, boardX: 0, travel: 0 };
   let season = 'summer';
   let october = false;      // jack-o'-lanterns in October (fall only)
-  let prevOctober = false;
+  const slotLists = new Map(); // prop slot -> the season's prop list when it scrolled into view
   let prevSeason = null; // fading out
   let fade = 1;          // 0..1 progress of the current crossfade
   let flakes = [];       // weather particles
@@ -375,12 +375,18 @@ export function createBackground({ reducedMotion = () => false } = {}) {
     return (oct && s.DECOR_OCTOBER) ? s.DECOR_OCTOBER : s.DECOR;
   }
 
-  function drawDecor(ctx, list, alpha) {
-    if (!list.length || alpha <= 0) return;
+  // Props never fade: each slot takes the season (and October-ness) that's active at the moment
+  // it scrolls onto the screen, then stays fully opaque until it scrolls off. So after a season
+  // change the old props simply stop appearing and the new ones start arriving.
+  function drawDecor(ctx) {
     const sprites = decorSprites();
-    ctx.globalAlpha = alpha;
-    const first = Math.floor((state.travel - 40) / DECOR_SLOT);
-    for (let k = first; k * DECOR_SLOT - state.travel < W + 40; k++) {
+    const first = Math.floor((state.travel - 60) / DECOR_SLOT);
+    for (const k of slotLists.keys()) if (k < first) slotLists.delete(k); // scrolled away
+    for (let k = first; k * DECOR_SLOT - state.travel < W; k++) {
+      const x = Math.round(k * DECOR_SLOT + slotNoise(k, 2) * (DECOR_SLOT - 30) - state.travel);
+      if (x >= W) continue; // not on screen yet: decide its season when it arrives
+      if (!slotLists.has(k)) slotLists.set(k, decorList(season, october));
+      const list = slotLists.get(k);
       const roll = slotNoise(k, 1);
       let acc = 0;
       let pick = null;
@@ -390,12 +396,10 @@ export function createBackground({ reducedMotion = () => false } = {}) {
       }
       if (!pick) continue;
       const img = sprites[pick];
-      const x = Math.round(k * DECOR_SLOT + slotNoise(k, 2) * (DECOR_SLOT - 30) - state.travel);
       ctx.drawImage(img, x, DECOR_BASE - img.height);
       // A second pumpkin or snowman now and then, for little groups
       if (pick !== 'leafPile' && slotNoise(k, 3) < 0.3) ctx.drawImage(img, x + img.width + 2, DECOR_BASE - img.height + 2);
     }
-    ctx.globalAlpha = 1;
   }
 
   function spawnFlake(w, y) {
@@ -465,9 +469,9 @@ export function createBackground({ reducedMotion = () => false } = {}) {
         prevSeason = null;
         fade = 1;
         flakes = [];
+        slotLists.clear(); // jump cut: the props on screen change too
       } else {
         prevSeason = season;
-        prevOctober = october;
         fade = 0;
       }
       season = name;
@@ -513,9 +517,8 @@ export function createBackground({ reducedMotion = () => false } = {}) {
         drawGround(ctx, season, 1);
       }
 
-      // Pitch-side props for the season, fading with it
-      if (prevSeason) drawDecor(ctx, decorList(prevSeason, prevOctober), 1 - fade);
-      drawDecor(ctx, decorList(season, october), prevSeason ? fade : 1);
+      // Pitch-side props (always fully opaque; see drawDecor)
+      drawDecor(ctx);
 
       // Weather (snow / petals / leaves), drifting with the wind and the run. Leaves tumble.
       for (const f of flakes) {

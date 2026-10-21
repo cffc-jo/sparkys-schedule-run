@@ -72,7 +72,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
    | Field | Notes |
    |---|---|
-   | `season` | Shown on the title screen and the end screen ("YOUR 2027-28 OPPONENTS"). |
+   | `season` | Shown on the title screen and the end screen ("YOUR 2027-28 SCHEDULE"). |
    | `matchNumber` | Shown on the reveal banner and in the opponents list. |
    | `opponent` | Official club name. Accents are fine (they're removed for display: "CF MONTREAL"). |
    | `code` | Club code. It's the logo file name and the fallback label if a logo is missing. |
@@ -341,7 +341,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Hitting a box adds **exactly +10.0 s**, with a "+10" pop, shake, stumble, buzz on Android, and about 1 s of flicker with no second penalty.
 - [ ] Every box, cleared or hit, shows the reveal banner with logo, match number, HOME/AWAY, opponent and date. Long names wrap.
 - [ ] Clearing boxes gradually speeds the run up.
-- [ ] The scenery changes season as boxes pass, following each match date: winter (snowy pitch, heavy snowfall, snowmen) → spring (flowers, petals) → summer → fall (olive-gold grass, falling leaves, leaf piles, plus jack-o'-lanterns after October matches). Each change crossfades over about 2 s. With reduced motion there's no weather and changes are instant.
+- [ ] The scenery changes season as boxes pass, following each match date: winter (snowy pitch, heavy snowfall, snowmen) → spring (flowers, petals) → summer → fall (olive-gold grass, falling leaves, leaf piles, plus jack-o'-lanterns after October matches). Sky and pitch colours crossfade over about 2 s. Props (snowmen, leaf piles, jack-o'-lanterns) never fade: they stay fully opaque, and after a change new ones simply stop or start arriving as the timeline moves on. With reduced motion there's no weather and changes are instant.
 - [ ] Soccer balls: collecting one gives a glow, a draining meter, faster music and 5 s of invincibility. Boxes shatter with no penalty and still reveal. Collecting another resets the meter to 5 s. The meter blinks in the last second.
 - [ ] All 5 balls can be collected in a clean run without hitting anything.
 - [ ] A clean run finishes in about 45–60 s. The current course is about 0:54.
@@ -356,7 +356,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Sparky runs into the side-on goal, "SEASON COMPLETE!" shows with confetti and a fanfare, then the breakdown appears with run time, penalties × count, and final time = run time + 10 s × hits.
 - [ ] **Continue** opens the end screen with the final time, breakdown and personal best.
 - [ ] Beating your best flashes **NEW BEST!**. A slower run keeps the old best.
-- [ ] The opponents list scrolls and shows all matches in order with logo, HOME/AWAY and date.
+- [ ] The "Your 2027-28 schedule" list scrolls and shows all matches in order with logo, HOME/AWAY and date.
 - [ ] **Share**: the phone's share sheet opens with "I ran Sparky's Schedule Run in M:SS.t — can you beat me?" and the link. On desktop or webviews without sharing, "LINK COPIED!" appears and the clipboard holds the text and link.
 - [ ] **Play again** starts a fresh run with the same course layout.
 
