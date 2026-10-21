@@ -93,15 +93,11 @@ export const SFX = {
     tone(c, o, t, { wave: 0.25, f0: N('A5'), dur: 0.05, vol: 0.16 });
     tone(c, o, t + 0.05, { wave: 0.25, f0: N('E6'), dur: 0.07, vol: 0.16 });
   },
-  // Powered-up Sparky bursting through a box: crunchy crate break + punchy thump, then a bright
-  // rising "ta-da" so it reads as a win, not a hit
+  // Powered-up Sparky bursting through a box: crunchy crate break + punchy thump
   smash: (c, o, t) => {
     noise(c, o, t, { dur: 0.14, vol: 0.4, freq: 2200, q: 0.5 });
     noise(c, o, t + 0.03, { dur: 0.12, vol: 0.22, freq: 5000, type: 'highpass' });
     tone(c, o, t, { wave: 0.5, f0: 180, f1: 60, dur: 0.12, vol: 0.26 });
-    tone(c, o, t + 0.07, { wave: 0.25, f0: N('C6'), dur: 0.05, vol: 0.17 });
-    tone(c, o, t + 0.12, { wave: 0.25, f0: N('G6'), dur: 0.1, vol: 0.17 });
-    tone(c, o, t + 0.12, { wave: 'triangle', f0: N('C5'), dur: 0.12, vol: 0.18 });
   },
   collect: (c, o, t) => arp(c, o, t, ['C6', 'E6', 'G6', 'C7'], 0.04, { wave: 0.125, vol: 0.18 }),
   invincibleStart: (c, o, t) => {
