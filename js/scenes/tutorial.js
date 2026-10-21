@@ -32,7 +32,7 @@ function steps(season) {
   return [
     {
       title: 'THE GOAL',
-      text: `Run Sparky through the whole <b>${season}</b> season. Every box is an <b>opponent</b>. Finish in the <b>fastest time</b>!`,
+      text: `Run the whole <b>${season}</b> season. Every box is an <b>opponent</b>. Fastest time wins, and hitting a box costs <b>+${pen} seconds</b>!`,
       pattern: ['ground'],
     },
     {
@@ -51,12 +51,12 @@ function steps(season) {
     },
     {
       title: 'POWER-UPS',
-      text: `Grab a <b>SOCCER BALL</b> for <b>${inv} seconds</b> of invincibility and smash boxes for free. Hitting a box costs <b>+${pen} seconds</b>.`,
+      text: `Grab a <b>SOCCER BALL</b> for <b>${inv} seconds</b> of invincibility and smash through boxes with <b>no penalty</b>!`,
       pattern: ['ball'],
     },
     {
       title: 'THE SCHEDULE',
-      text: 'Every box you pass <b>reveals a match</b>: opponent, home or away, and the date. Finish the run to see the <b>whole schedule</b>!',
+      text: 'Every box you pass <b>reveals a match</b>: opponent, home or away, and date. Finish to see the <b>whole schedule</b>!',
       pattern: ['ground'],
       banner: true,
     },

@@ -325,7 +325,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.
 
 **First-time tutorial**
-- [ ] On a device that has never played (or after clearing site data), **Play** opens the 5-card tutorial: Goal, Jump, Duck, Power-ups, The schedule. Each card has a live demo of Sparky doing it.
+- [ ] On a device that has never played (or after clearing site data), **Play** opens the 5-card tutorial: Goal (including the +10 s penalty), Jump, Duck, Power-ups, The schedule. Each card has a live demo of Sparky doing it.
 - [ ] Wording matches the device: phones say TAP / SWIPE; desktop shows SPACE / W / ↑ and S / ↓.
 - [ ] **Next** (or Enter / →) advances and ← goes back. The last button is **Let's go!**, which starts the countdown.
 - [ ] **Skip** (or Esc) jumps straight into the run.
