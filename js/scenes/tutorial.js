@@ -188,6 +188,7 @@ export function createTutorialScene(app) {
         if (!it.gone && invT > 0 && it.x - dist < 8 && it.x - dist > -OB.boxSize) {
           it.gone = true;
           particles.burst(SX + (it.x - dist) + OB.boxSize / 2, GROUND - OB.boxSize / 2, { count: 16, colors: [P.RED, P.WHITE, P.FLAG_BLUE, P.DARK_NAVY], speed: 150, up: 80, size: 3 });
+          app.audio.play('smash');
         }
         if (!it.passed && it.x + OB.boxSize < dist - 6) {
           it.passed = true;

@@ -172,12 +172,12 @@ export function createPlayScene(app) {
     if (scenery) app.bg.setSeason(scenery.season, { isOctober: scenery.isOctober });
   }
 
-  function clearBox(b) {
+  function clearBox(b, sound = 'clear') {
     b.state = 'cleared';
     cleared++;
     speed = currentSpeed(cleared, GAME.speed);
     reveal(b);
-    sfx('clear');
+    sfx(sound);
   }
 
   function shatterBox(b) {
@@ -186,7 +186,7 @@ export function createPlayScene(app) {
     const cy = GROUND - boxBase(b.ob) - OB.boxSize / 2;
     const home = String(b.ob.match.homeAway).toUpperCase() === 'HOME';
     particles.burst(cx, cy, { count: 18, colors: [home ? P.RED : P.FLAG_BLUE, P.WHITE, P.DARK_NAVY, P.FIRE_RED], speed: 160, up: 80, size: 3 });
-    clearBox(b);
+    clearBox(b, 'smash');
     vibrate(20);
   }
 
