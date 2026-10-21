@@ -22,20 +22,20 @@ const rrect = (x0, y0, x1, y1, r) => (x, y) => {
   return (px - cx) ** 2 + (py - cy) ** 2 <= r * r;
 };
 
-const newGrid = () => Array.from({ length: FH }, () => Array(FW).fill(null));
+const newGrid = (w = FW) => Array.from({ length: FH }, () => Array(w).fill(null));
 
 // Fill a shape (colour or per-pixel colour function) and give it its own 1px outline
 function paint(g, fn, fill, outline = true) {
-  const m = newGrid();
-  for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) m[y][x] = fn(x, y);
-  for (let y = 0; y < FH; y++) for (let x = 0; x < FW; x++) {
+  const w = g[0].length, m = newGrid(w);
+  for (let y = 0; y < FH; y++) for (let x = 0; x < w; x++) m[y][x] = fn(x, y);
+  for (let y = 0; y < FH; y++) for (let x = 0; x < w; x++) {
     if (m[y][x]) g[y][x] = typeof fill === 'function' ? fill(x, y) : fill;
     else if (outline && (m[y][x - 1] || m[y][x + 1] || (m[y - 1] && m[y - 1][x]) || (m[y + 1] && m[y + 1][x]))) g[y][x] = 'K';
   }
 }
 function px(g, x, y, c) {
   x = Math.round(x); y = Math.round(y);
-  if (y >= 0 && y < FH && x >= 0 && x < FW) g[y][x] = c;
+  if (y >= 0 && y < FH && x >= 0 && x < g[0].length) g[y][x] = c;
 }
 
 // Hand-drawn feature stamps ('.' = leave as is)
@@ -164,16 +164,50 @@ function compose(pose, opts = {}) {
   return g;
 }
 
-// Duck: crouched low with the head pushed forward beside the shoulders (stays well under the
-// hanging boxes)
+// Duck: a low sprinter's crouch. The body stretches out level behind the head, knees down and
+// fists on the turf, chin tucked just above the ground. Drawn on a wider frame (DUCK_W) so the body
+// has room to lie out behind instead of being squashed under the head; the whole pose stays 17px
+// tall, well under the hanging boxes.
+const DUCK_W = 44; // keep in step with the duck rect in config/sprites.js
+
+function limb(g, a, k, e, r, sleeve = 0) {
+  const sl = sleeve ? cap(a[0], a[1], a[0] + (k[0] - a[0]) * sleeve, a[1] + (k[1] - a[1]) * sleeve, r + 0.45) : () => false;
+  paint(g, union(cap(...a, ...k, r + 0.3), cap(...k, ...e, r), sl), (x, y) => (sl(x, y) ? 'R' : 'W'));
+}
+const cleat = (g, f) => paint(g, ell(f[0] + 1.2, f[1] + 0.6, 2.4, 1.3), 'K');
+const fist = (g, h) => paint(g, ell(h[0], h[1], BODY.fist, BODY.fist), 'K', false);
+
+// Jersey + shorts as one capsule running from the hip up to the shoulder
+function drawLevelTorso(g, hip, sh, r) {
+  const dx = sh[0] - hip[0], dy = sh[1] - hip[1], len2 = dx * dx + dy * dy;
+  const along = (x, y) => ((x + 0.5 - hip[0]) * dx + (y + 0.5 - hip[1]) * dy) / len2;
+  const body = cap(hip[0], hip[1], sh[0], sh[1], r);
+  paint(g, body, (x, y) => {
+    const t = along(x, y);
+    if (t < 0.24) return (Math.round(y) >= Math.round(hip[1]) + 2 && t > 0.02) ? 'X' : 'R'; // shorts
+    if (t < 0.34) return 'D';                                                             // waistband
+    if (t > 0.6 && t < 0.74) return 'W';                                                  // chest band
+    if (!body(x, y - 1)) return 'F';                                                      // highlight
+    if (!body(x, y + 1)) return 'D';                                                      // shade
+    return 'R';
+  });
+  px(g, hip[0] + dx * 0.12, hip[1] + dy * 0.12 + r - 0.4, 'K'); // split between the legs
+}
+
 function duckFrame() {
-  const b = BODY, g = newGrid(), bob = 7;
-  drawArm(g, b, { shDX: -2, el: [-1, 2.4], hand: [0.5, 1.4] }, bob, 1);
-  drawLeg(g, b, { hipDX: -1.5, knee: [-2.6, -0.4], foot: [-0.2, 1.4] }, bob);
-  drawTorso(g, b, bob, 1);
-  drawLeg(g, b, { hipDX: 1, knee: [3, -0.4], foot: [-0.4, 1.4] }, bob);
-  drawHead(g, HEAD, 5, 17);
-  drawArm(g, b, { shDX: 1, el: [2, 2.2], hand: [1, 1.2] }, bob, 1);
+  const g = newGrid(DUCK_W);
+  const hip = [10.5, 27.5], sh = [21, 26];
+  // far side: arm and leg
+  limb(g, [sh[0] - 1, sh[1]], [24.5, 30], [28.5, 33.4], BODY.armR, 0.45); fist(g, [28.5, 33.4]);
+  limb(g, [hip[0] - 1, hip[1] + 1], [12.5, 32.6], [6.5, 33.6], BODY.legR); cleat(g, [5.2, 33.6]);
+  px(g, 10.5, 30.5, 'K'); // spot
+  drawLevelTorso(g, hip, sh, 3.7);
+  // near leg: knee down on the turf, shin back along the ground
+  limb(g, [hip[0] + 1.5, hip[1] + 1], [15.5, 32.6], [9.5, 33.6], BODY.legR); cleat(g, [8.2, 33.6]);
+  px(g, 14, 30.5, 'K');
+  // near arm reaching down, fist planted just ahead of the chin
+  limb(g, [sh[0], sh[1]], [26, 30.4], [31, 33.4], BODY.armR, 0.45); fist(g, [31, 33.4]);
+  drawHead(g, HEAD, 15, 17);
   return g;
 }
 
