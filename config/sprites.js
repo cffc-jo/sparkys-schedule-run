@@ -3,11 +3,11 @@
 // Each frame is a rectangle on the sheet; `anchor` is the point (within the frame) that sits on
 // Sparky's position — bottom-centre = feet on the ground. A frame may override with anchorX/anchorY.
 // If the PNG is missing, the game builds an equivalent sheet from the built-in pixel art.
-const F = (i) => ({ x: i * 24, y: 0, w: 24, h: 32 });
+const F = (i) => ({ x: i * 30, y: 0, w: 30, h: 36 });
 
 export const SPARKY_SHEET = {
   src: 'assets/sprites/sparky.png',
-  anchor: { x: 12, y: 32 },
+  anchor: { x: 13, y: 36 },
   frames: {
     idle0: F(0), idle1: F(1),
     run0: F(2), run1: F(3), run2: F(4), run3: F(5),

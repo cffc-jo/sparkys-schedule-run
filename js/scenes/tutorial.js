@@ -231,9 +231,9 @@ export function createTutorialScene(app) {
       const feetY = GROUND - Math.round(sparky.y);
       if (anim.name === 'spin') {
         ctx.save();
-        ctx.translate(SX, feetY - 16);
+        ctx.translate(SX, feetY - 18);
         ctx.rotate((Math.floor(sparky.spinT / 0.1) % 4) * Math.PI / 2);
-        app.sheet.draw(ctx, anim.frame, 0, 16);
+        app.sheet.draw(ctx, anim.frame, 0, 18);
         ctx.restore();
       } else {
         if (invT > 0) app.sheet.drawGlow(ctx, anim.frame, SX, feetY, [P.FIRE_RED, P.FLAG_BLUE][Math.floor(t * 10) % 2]);

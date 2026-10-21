@@ -535,10 +535,10 @@ export function createPlayScene(app) {
       if (anim.name === 'spin') {
         const turns = Math.floor(sparky.spinT / 0.1) % 4;
         ctx.save();
-        ctx.translate(SX, feetY - 16); // spin around the middle of the 32px frame
+        ctx.translate(SX, feetY - 18); // spin around the middle of the 36px frame
         ctx.rotate((turns * Math.PI) / 2);
         if (glowOn) app.sheet.drawGlow(ctx, anim.frame, 0, 16, glow);
-        app.sheet.draw(ctx, anim.frame, 0, 16);
+        app.sheet.draw(ctx, anim.frame, 0, 18);
         ctx.restore();
       } else {
         if (glowOn) app.sheet.drawGlow(ctx, anim.frame, SX, feetY, glow);
