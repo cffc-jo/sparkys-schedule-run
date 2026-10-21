@@ -13,7 +13,7 @@ export const SPARKY_SHEET = {
     run0: F(2), run1: F(3), run2: F(4), run3: F(5),
     jump: F(6),
     spin: F(7),       // double jump: the game spins this frame in 90° steps
-    duck: { x: 12 * 30, y: 0, w: 44, h: 36, anchorX: 22 }, // wider frame: the crouch lies out low
+    duck: { x: 12 * 30, y: 0, w: 44, h: 36, anchorX: 22 }, // wider frame: the superman dive lies out flat
     hit: F(9),
     victory0: F(10), victory1: F(11),
   },

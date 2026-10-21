@@ -164,10 +164,9 @@ function compose(pose, opts = {}) {
   return g;
 }
 
-// Duck: a low sprinter's crouch. The body stretches out level behind the head, knees down and
-// fists on the turf, chin tucked just above the ground. Drawn on a wider frame (DUCK_W) so the body
-// has room to lie out behind instead of being squashed under the head; the whole pose stays 17px
-// tall, well under the hanging boxes.
+// Duck: a "superman dive". Flat on his belly with an arm stretched out front and his feet kicked
+// up behind him. Drawn on a wider frame (DUCK_W) so he can lie out at full length; the whole pose
+// is 16px tall, well under the hanging boxes.
 const DUCK_W = 44; // keep in step with the duck rect in config/sprites.js
 
 function limb(g, a, k, e, r, sleeve = 0) {
@@ -196,18 +195,13 @@ function drawLevelTorso(g, hip, sh, r) {
 
 function duckFrame() {
   const g = newGrid(DUCK_W);
-  const hip = [10.5, 27.5], sh = [21, 26];
-  // far side: arm and leg
-  limb(g, [sh[0] - 1, sh[1]], [24.5, 30], [28.5, 33.4], BODY.armR, 0.45); fist(g, [28.5, 33.4]);
-  limb(g, [hip[0] - 1, hip[1] + 1], [12.5, 32.6], [6.5, 33.6], BODY.legR); cleat(g, [5.2, 33.6]);
-  px(g, 10.5, 30.5, 'K'); // spot
-  drawLevelTorso(g, hip, sh, 3.7);
-  // near leg: knee down on the turf, shin back along the ground
-  limb(g, [hip[0] + 1.5, hip[1] + 1], [15.5, 32.6], [9.5, 33.6], BODY.legR); cleat(g, [8.2, 33.6]);
-  px(g, 14, 30.5, 'K');
-  // near arm reaching down, fist planted just ahead of the chin
-  limb(g, [sh[0], sh[1]], [26, 30.4], [31, 33.4], BODY.armR, 0.45); fist(g, [31, 33.4]);
-  drawHead(g, HEAD, 15, 17);
+  const hip = [10, 31.5], sh = [22, 31];
+  limb(g, [hip[0] - 1, hip[1]], [4.5, 32.6], [2.5, 27.5], BODY.legR); cleat(g, [1.3, 26.4]);     // far foot kicked up
+  drawLevelTorso(g, hip, sh, 3.3);
+  limb(g, [hip[0] + 0.5, hip[1] + 0.5], [5.5, 33.4], [5, 28.5], BODY.legR); cleat(g, [4, 27.6]); // near foot kicked up
+  px(g, 7, 32.5, 'K'); // spot
+  drawHead(g, HEAD, 19, 18);
+  limb(g, [sh[0] + 1, sh[1] + 1], [30, 33.6], [38, 33.4], BODY.armR, 0.35); fist(g, [39.5, 33.4]); // arm out front
   return g;
 }
 
