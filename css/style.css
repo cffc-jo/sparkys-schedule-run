@@ -439,3 +439,43 @@ body {
   user-select: none;
 }
 .debug-panel button { font: inherit; cursor: pointer; }
+
+/* ---------- First-time tutorial ---------- */
+.tutorial-card {
+  position: absolute;
+  top: calc(var(--u) * 40);
+  left: calc(var(--u) * 8);
+  right: calc(var(--u) * 8);
+  display: grid;
+  gap: calc(var(--u) * 5);
+  padding: calc(var(--u) * 8) calc(var(--u) * 10);
+  background: var(--c-deep-red);
+  pointer-events: auto;
+  box-shadow:
+    0 0 0 calc(var(--u) * 1) var(--c-dark-navy),
+    0 0 0 calc(var(--u) * 3) var(--c-white),
+    0 0 0 calc(var(--u) * 4) var(--c-dark-navy);
+}
+.tutorial-card .tut-step { margin: 0; font-size: calc(var(--u) * 7); color: var(--c-flag-blue); letter-spacing: calc(var(--u) * 1); }
+.tutorial-card h2 {
+  margin: 0;
+  font-size: calc(var(--u) * 13);
+  font-weight: normal;
+  letter-spacing: calc(var(--u) * 1);
+  text-shadow: calc(var(--u) * 2) calc(var(--u) * 2) 0 var(--c-dark-red);
+}
+.tutorial-card .tut-text {
+  margin: 0;
+  height: 8.2em;            /* fixed: the card is the same size on every step */
+  font-size: calc(var(--u) * 7);
+  line-height: 1.6;
+  letter-spacing: calc(var(--u) * 1);
+}
+.tutorial-card .tut-text b { font-weight: normal; color: var(--c-flag-blue); }
+.tut-dots { display: flex; justify-content: center; gap: calc(var(--u) * 4); }
+.tut-dots span { width: calc(var(--u) * 5); height: calc(var(--u) * 5); background: var(--c-dark-red); box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy); }
+.tut-dots span.on { background: var(--c-white); }
+.tut-buttons { display: grid; grid-template-columns: 1fr 1.6fr; gap: calc(var(--u) * 8); }
+.tut-buttons .btn { font-size: calc(var(--u) * 10); }
+.modal-buttons { display: grid; grid-template-columns: 1fr 1.4fr; gap: calc(var(--u) * 8); }
+.modal-buttons .btn-secondary { font-size: calc(var(--u) * 8); }

@@ -21,6 +21,8 @@ import { createDebugTools } from './debug.js';
 import { createTitleScene } from './scenes/title.js';
 import { createPlayScene } from './scenes/play.js';
 import { createEndScene } from './scenes/end.js';
+import { createTutorialScene, TUTORIAL_KEY } from './scenes/tutorial.js';
+import { load } from './storage.js';
 import { isEnabled as leaderboardEnabled } from './leaderboard.js';
 import { shareResult } from './share.js';
 
@@ -180,12 +182,21 @@ async function boot() {
   frame.querySelectorAll('[data-action="schedule"]').forEach((a) => { a.href = scheduleUrl(); });
 
   const modal = createModal(document.getElementById('modal'), {
-    onChange: (open) => { if (app.scene && app.scene.onModalChange) app.scene.onModalChange(open); },
+    onChange: (open) => {
+      // The TUTORIAL replay button only makes sense from the menus, not mid-run
+      const replay = document.querySelector('[data-tutorial-replay]');
+      if (replay) replay.hidden = !(app.scene === app.scenes.title || app.scene === app.scenes.end);
+      if (app.scene && app.scene.onModalChange) app.scene.onModalChange(open);
+    },
   });
   app.modal = modal;
 
   app.ui = createUI(frame, {
-    play: () => app.go('play'),
+    // First PLAY on this device shows the tutorial; after that, straight into the run.
+    play: () => app.go(load(TUTORIAL_KEY, false) ? 'play' : 'tutorial'),
+    'tutorial-next': () => app.scenes.tutorial.next(),
+    'tutorial-skip': () => app.scenes.tutorial.skip(),
+    'replay-tutorial': () => { modal.close(); app.go('tutorial'); },
     continue: () => afterFinish(),
     'play-again': () => { track('play_again'); app.go('play'); },
     share: async () => {
@@ -211,6 +222,7 @@ async function boot() {
   app.scenes.title = createTitleScene(app);
   app.scenes.play = createPlayScene(app);
   app.scenes.end = createEndScene(app);
+  app.scenes.tutorial = createTutorialScene(app);
   if (isDebug()) app.debug = createDebugTools(app);
   frame.querySelectorAll('[data-bind-text="season"]').forEach((el) => { el.textContent = app.schedule.season; });
 

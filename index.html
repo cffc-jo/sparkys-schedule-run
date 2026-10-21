@@ -59,6 +59,20 @@
           </div>
         </section>
 
+        <!-- First-time tutorial: cards over a live demo (js/scenes/tutorial.js fills the text) -->
+        <section class="screen" data-screen="tutorial" hidden aria-labelledby="tut-title">
+          <div class="panel tutorial-card" role="group" aria-roledescription="tutorial step">
+            <p class="tut-step" data-tut="step"></p>
+            <h2 id="tut-title" data-tut="title"></h2>
+            <p class="tut-text" data-tut="text" aria-live="polite"></p>
+            <div class="tut-dots" data-tut="dots" aria-hidden="true"></div>
+            <div class="tut-buttons">
+              <button class="btn btn-secondary" data-action="tutorial-skip">SKIP</button>
+              <button class="btn btn-primary" data-action="tutorial-next" data-tut="next">NEXT</button>
+            </div>
+          </div>
+        </section>
+
         <!-- Gameplay: everything is drawn on the canvas; taps anywhere jump -->
         <section class="screen" data-screen="play" hidden aria-label="Game in progress"></section>
 
@@ -153,7 +167,10 @@
             </ul>
             <p class="note">You always finish the run. Penalties only add time.</p>
           </div>
-          <button class="btn btn-primary" data-action="close-modal">GOT IT!</button>
+          <div class="modal-buttons">
+            <button class="btn btn-secondary" data-action="replay-tutorial" data-tutorial-replay>TUTORIAL</button>
+            <button class="btn btn-primary" data-action="close-modal">GOT IT!</button>
+          </div>
         </div>
       </div>
     </div>

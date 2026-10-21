@@ -185,6 +185,8 @@ Planned design, for context:
 | `schedule_click` | **View schedule** tapped | `{ source: 'title' \| 'end' }` |
 | `share_click` | **Share** tapped | `{ finalTimeMs }` |
 | `play_again` | **Play again** on the end screen | — |
+| `tutorial_complete` | **Let's go!** on the last tutorial card | `{ step }` |
+| `tutorial_skip` | **Skip** or Esc during the tutorial | `{ step }` (the card they left on) |
 
 Outbound schedule link and UTM tags: `config/links.js`. Share text, with a slot for a future hashtag: `config/links.js` → `SHARE`.
 
@@ -268,7 +270,7 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | ui | `buttonCooldownMs` | 350 | Ignore double-taps on buttons |
 | audio | `sfxVolume`, `musicVolume` | 0.7, 0.3 | Volumes |
 | flags | `LEADERBOARD_ENABLED` | false | See [Leaderboard](#leaderboard-future) |
-| — | `storageKeyPrefix` | `sparky-run:` | localStorage namespace (mute, personal best) |
+| — | `storageKeyPrefix` | `sparky-run:` | localStorage namespace (mute, personal best, `tutorialSeen`) |
 
 Other config files:
 
@@ -288,7 +290,7 @@ config/                 everything tunable (see above)
 js/main.js              boot, preload, screen flow, actions, lifecycle
 js/loop.js              fixed-timestep requestAnimationFrame loop
 js/renderer.js          logical canvas + crisp scaling/letterboxing
-js/scenes/              title.js, play.js (the run), end.js
+js/scenes/              title.js, tutorial.js (first-time walkthrough), play.js (the run), end.js
 js/game/                sparky.js (physics), boxArt.js, banner.js, particles.js
 js/world/background.js  sky, clouds, skyline parallax, LED boards, pitch
 js/art/                 built-in pixel art (Sparky, ball, icons) + helpers
@@ -321,6 +323,14 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] **View schedule** opens chicagofirefc.com/schedule with the `utm_*` tags, in a new tab or the system browser (including from the in-app webview).
 - [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**.
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.
+
+**First-time tutorial**
+- [ ] On a device that has never played (or after clearing site data), **Play** opens the 5-card tutorial: Goal, Jump, Duck, Power-ups, The schedule. Each card has a live demo of Sparky doing it.
+- [ ] Wording matches the device: phones say TAP / SWIPE; desktop shows SPACE / W / ↑ and S / ↓.
+- [ ] **Next** (or Enter / →) advances and ← goes back. The last button is **Let's go!**, which starts the countdown.
+- [ ] **Skip** (or Esc) jumps straight into the run.
+- [ ] After finishing or skipping once, **Play** goes straight to the run, including after a reload.
+- [ ] **How to Play → Tutorial** replays it from the title or end screen. The button is hidden mid-run.
 
 **Gameplay**
 - [ ] 3-2-1-GO with beeps. The timer starts on GO and the theme starts on GO.

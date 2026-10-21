@@ -72,17 +72,18 @@ export function createBanner() {
 
     clear() { cur = null; },
 
-    render(ctx, { reducedMotion = false } = {}) {
+    // `top` moves the banner (the tutorial shows it lower, under its card).
+    render(ctx, { reducedMotion = false, top = PANEL.y } = {}) {
       if (!cur) return;
       const total = GAME.ui.bannerSeconds;
       let offset = 0;
       if (!reducedMotion) {
-        const travel = PANEL.y + PANEL.h + LINE_H;
+        const travel = top + PANEL.h + LINE_H;
         if (cur.age < SLIDE_IN) offset = (1 - easeOutBack(cur.age / SLIDE_IN)) * -travel;
         else if (cur.age > total - SLIDE_OUT) offset = ((cur.age - (total - SLIDE_OUT)) / SLIDE_OUT) * -travel;
       }
       const x = PANEL.x;
-      const y = Math.round(PANEL.y + offset);
+      const y = Math.round(top + offset);
       const h = PANEL.h + (cur.name.length - 1) * LINE_H;
       const flash = cur.age < 0.35 && Math.floor(cur.age * 12) % 2 === 0;
 
