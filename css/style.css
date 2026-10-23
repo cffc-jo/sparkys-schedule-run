@@ -241,9 +241,10 @@ body {
 .end-panel h2 {
   margin: 0;
   text-align: center;
-  font-size: calc(var(--u) * 11);
+  font-size: calc(var(--u) * 10);
   font-weight: normal;
   letter-spacing: calc(var(--u) * 1);
+  white-space: nowrap; /* one line */
 }
 .end-time {
   padding: calc(var(--u) * 6);
