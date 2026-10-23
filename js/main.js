@@ -10,7 +10,7 @@ import { pixelateImage } from './art/pixelArt.js';
 import { buildSparkySheet } from './art/sparkyArt.js';
 import { iconDataURL } from './art/icons.js';
 import { createSpriteSheet } from './sprite.js';
-import { createBackground } from './world/background.js';
+import { createBackground, BILLBOARD_LOGO } from './world/background.js';
 import { createUI } from './ui/ui.js';
 import { createModal } from './ui/modal.js';
 import { audio } from './audio/audio.js';
@@ -145,6 +145,20 @@ function toast(message) {
   toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
 }
 
+// Draw an image (e.g. an SVG logo) smoothly into a canvas at renderScale, so it stays crisp when
+// drawn at logical size w x h on the game canvas (which otherwise renders pixel-sharp).
+function rasterize(img, w, h) {
+  const RS = GAME.view.renderScale;
+  const c = document.createElement('canvas');
+  c.width = w * RS;
+  c.height = h * RS;
+  const x = c.getContext('2d');
+  x.imageSmoothingEnabled = true;
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+
 // ---- Boot ----
 async function boot() {
   // Font first so the loading text is in the right face
@@ -156,6 +170,7 @@ async function boot() {
     { key: 'sparky', type: 'image', src: SPARKY_SHEET.src, optional: true },
     { key: 'chi', type: 'image', src: 'assets/logos/CHI.png', optional: true }, // pixel crest from tools/pixelate-logos.js
     { key: 'crest', type: 'image', src: 'assets/crest.svg', optional: true },   // fallback until CHI.png exists
+    { key: 'sponsor', type: 'image', src: 'assets/sponsors/carvana.svg', optional: true }, // presenting partner (billboard)
   ], (p) => { loadProgress = p; });
 
   app.assets = assets;
@@ -170,7 +185,10 @@ async function boot() {
   app.logos = logos;
   app.sheet = createSpriteSheet(assets.sparky || buildSparkySheet(SPARKY_SHEET), SPARKY_SHEET);
   app.crest = assets.chi || (assets.crest ? pixelateImage(assets.crest, GAME.world.crestSize * GAME.view.renderScale) : null);
-  app.bg = createBackground({ reducedMotion: () => app.reducedMotion });
+  app.bg = createBackground({
+    reducedMotion: () => app.reducedMotion,
+    sponsorLogo: assets.sponsor ? rasterize(assets.sponsor, BILLBOARD_LOGO.w, BILLBOARD_LOGO.h) : null,
+  });
 
   // DOM: bind config values into the instructions, icons, links
   frame.querySelectorAll('[data-bind]').forEach((el) => {
@@ -183,9 +201,7 @@ async function boot() {
 
   const modal = createModal(document.getElementById('modal'), {
     onChange: (open) => {
-      // The TUTORIAL replay button only makes sense from the menus, not mid-run
-      const replay = document.querySelector('[data-tutorial-replay]');
-      if (replay) replay.hidden = !(app.scene === app.scenes.title || app.scene === app.scenes.end);
+      // The TUTORIAL button is always offered; mid-run it leaves the run (the tutorial ends in a fresh one)
       if (app.scene && app.scene.onModalChange) app.scene.onModalChange(open);
     },
   });

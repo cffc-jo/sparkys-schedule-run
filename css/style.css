@@ -149,10 +149,32 @@ body {
 }
 
 /* ---------- Title ---------- */
+/* Presenting partner lockup: "PRESENTED BY" + logo on a white strip (logo kept on white, unaltered) */
+.sponsor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 6);
+  padding: calc(var(--u) * 3) calc(var(--u) * 8);
+  background: var(--c-white);
+  color: var(--c-dark-navy);
+  font-size: calc(var(--u) * 7);
+  letter-spacing: calc(var(--u) * 1);
+  box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy);
+}
+.sponsor img { display: block; height: calc(var(--u) * 15); width: auto; }
+.sponsor-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 137);
+  height: calc(var(--u) * 24);
+}
+
 .title-buttons {
   position: absolute;
   left: 50%;
-  top: calc(var(--u) * 150);
+  top: calc(var(--u) * 172);
   transform: translateX(-50%);
   width: calc(var(--u) * 170);
   display: flex;
@@ -248,7 +270,6 @@ body {
   font-size: calc(var(--u) * 7);
 }
 .end-row-text:first-of-type { margin-top: calc(var(--u) * 7); }
-.end-best { color: var(--c-flag-blue); }
 
 .leaderboard-slot { min-height: calc(var(--u) * 40); }
 

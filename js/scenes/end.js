@@ -1,4 +1,4 @@
-// End screen: thanks, final time + breakdown, personal best, the full opponents list,
+// End screen: thanks, final time + breakdown (and a NEW BEST! flash), the full opponents list,
 // play again / view schedule / share. The panel is DOM (scrollable, accessible); the canvas
 // behind it keeps the stadium backdrop.
 import { formatTime } from '../timer.js';
@@ -59,7 +59,6 @@ export function createEndScene(app) {
       $('raw').textContent = formatTime(r.rawTimeMs);
       $('penCount').textContent = `×${r.penalties}`;
       $('penTime').textContent = `+${formatTime(r.penaltyMs)}`;
-      $('best').textContent = best && best.best ? formatTime(best.best.finalTimeMs) : formatTime(r.finalTimeMs);
       $('newBest').hidden = !(best && best.isNewBest && best.previous);
       list.scrollTop = 0;
       app.ui.setPauseVisible(false);

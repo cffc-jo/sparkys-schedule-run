@@ -144,6 +144,31 @@ function buildFarCity() {
   return c;
 }
 
+// Presenting-partner billboard on a rooftop in the near skyline (layer coords: x = left edge,
+// y = height of the panel's bottom above the layer's ground line). The frame is pixel art in the
+// layer; the logo itself is drawn crisp on top at render time (see drawBillboardLogo).
+const BILLBOARD = { x: 300, y: 66, w: 58, h: 18, roof: 58 };
+export const BILLBOARD_LOGO = { x: 5, y: 4, w: 48, h: 10 }; // inside the panel (from its top-left)
+
+function drawBillboard(x, base) {
+  const b = BILLBOARD;
+  const rect = (c, rx, ry, w, h) => { x.fillStyle = c; x.fillRect(rx, base - ry - h, w, h); };
+  // The building it stands on
+  rect(S.CITY_DARK, b.x - 4, 0, b.w + 8, b.roof);
+  windows(x, rng(58), b.x - 4, base - b.roof, b.w + 8, base, S.CITY_NEAR, 0.3);
+  // Legs and a catwalk
+  for (const lx of [b.x + 8, b.x + b.w - 10]) rect(S.CITY_DARK, lx, b.roof, 2, b.y - b.roof);
+  rect(S.CITY_DARK, b.x + 2, b.y - 2, b.w - 4, 1);
+  // Panel: dark frame, white face
+  rect(S.CITY_DARK, b.x, b.y, b.w, b.h);
+  rect(P.WHITE, b.x + 1, b.y + 1, b.w - 2, b.h - 2);
+  // Little lamps on top
+  for (const lx of [b.x + 12, b.x + b.w / 2 - 1, b.x + b.w - 14]) {
+    rect(S.CITY_DARK, lx, b.y + b.h, 2, 1);
+    rect(S.CITY_DARK, lx + 1, b.y + b.h + 1, 2, 1);
+  }
+}
+
 function buildNearCity() {
   const w = W * 2, h = 170;
   const c = makeCanvas(w, h);
@@ -190,6 +215,7 @@ function buildNearCity() {
 
   drawWrigley(x, 54, base);
   drawStadium(x, 172, base);
+  drawBillboard(x, base);
 
   // Aircraft warning lights
   x.fillStyle = P.FIRE_RED;
@@ -334,7 +360,8 @@ function buildGroundTile(S) {
 
 const BOARD_TEXT = '  CHICAGO FIRE FC  ·  SPARKY\'S SCHEDULE RUN  ·  ';
 
-export function createBackground({ reducedMotion = () => false } = {}) {
+// sponsorLogo: the presenting partner's logo, pre-rasterised at renderScale for BILLBOARD_LOGO
+export function createBackground({ reducedMotion = () => false, sponsorLogo = null } = {}) {
   const clouds = cloudLayout();
   const farCity = buildFarCity();
   const nearCity = buildNearCity();
@@ -497,6 +524,14 @@ export function createBackground({ reducedMotion = () => false } = {}) {
       const nx = Math.floor(state.near);
       ctx.drawImage(nearCity, -nx, BOARD_TOP - nearCity.height);
       ctx.drawImage(nearCity, nearCity.width - nx, BOARD_TOP - nearCity.height);
+      if (sponsorLogo) {
+        const L = BILLBOARD_LOGO;
+        const ly = BOARD_TOP - BILLBOARD.y - BILLBOARD.h + L.y;
+        for (const tile of [-nx, nearCity.width - nx]) {
+          const lx = tile + BILLBOARD.x + L.x;
+          if (lx < W && lx + L.w > 0) ctx.drawImage(sponsorLogo, lx, ly, L.w, L.h);
+        }
+      }
 
       // Pitch-side LED boards
       ctx.fillStyle = P.RED;

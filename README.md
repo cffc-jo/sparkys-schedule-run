@@ -7,7 +7,7 @@ An 8-bit browser game for the **Chicago Fire FC 2027-28 schedule release**. Spar
 - **Size:** about 550 KB in total, with everything preloaded behind an 8-bit loading bar. It works offline once loaded.
 - **Targets:** mobile-first portrait, iOS Safari, Android Chrome, in-app webviews (iOS WKWebView, Android WebView) and desktop.
 
-> **Before launch: brand/legal review.** The opponent logos in `assets/logos/` are **stylised 8-bit renderings of other clubs' marks**, and `config/schedule.json` currently holds the **2026** schedule as a placeholder. Get the logo usage approved and swap in the real 2027-28 schedule (see [Swapping in the 2027-28 schedule](#swapping-in-the-2027-28-schedule-and-logos)).
+> **Before launch: brand/legal review.** The opponent logos in `assets/logos/` are **stylised 8-bit renderings of other clubs' marks**, and `config/schedule.json` currently holds the **2026** schedule as a placeholder. Get the logo usage approved and swap in the real 2027-28 schedule (see [Swapping in the 2027-28 schedule](#swapping-in-the-2027-28-schedule-and-logos)). The presenting partner, **Carvana**, appears on the start screen, the end screen and a skyline billboard, using their official logo (`assets/sponsors/carvana.svg`, unaltered, on white); confirm those placements with the partner too.
 
 ---
 
@@ -304,7 +304,7 @@ js/analytics.js         stub (future)
 js/debug.js             ?debug=1 tools
 tools/                  serve.ps1, logo pixelation (core + Node script + contact sheet), export-art.html
 tests/                  tests.js + run.html (browser) + run.js (Node)
-assets/                 font (+ OFL licence), logos, sprites, icons, share image
+assets/                 font (+ OFL licence), logos, sponsors (Carvana), sprites, icons, share image
 ```
 
 ## Manual QA checklist
