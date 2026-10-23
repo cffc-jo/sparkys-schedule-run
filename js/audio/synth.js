@@ -93,11 +93,16 @@ export const SFX = {
     tone(c, o, t, { wave: 0.25, f0: N('A5'), dur: 0.05, vol: 0.16 });
     tone(c, o, t + 0.05, { wave: 0.25, f0: N('E6'), dur: 0.07, vol: 0.16 });
   },
-  // Powered-up Sparky bursting through a box: crunchy crate break + punchy thump
+  // Powered-up Sparky bursting through a box. Crunch: a hard impact, a thump, then a crackle of
+  // splintering debris. Positive: a rising power "zing" and a bright major-chord sparkle on the
+  // hit, so it feels like a reward (no melody).
   smash: (c, o, t) => {
-    noise(c, o, t, { dur: 0.14, vol: 0.4, freq: 2200, q: 0.5 });
-    noise(c, o, t + 0.03, { dur: 0.12, vol: 0.22, freq: 5000, type: 'highpass' });
-    tone(c, o, t, { wave: 0.5, f0: 180, f1: 60, dur: 0.12, vol: 0.26 });
+    noise(c, o, t, { dur: 0.09, vol: 0.45, freq: 1800, q: 0.5 });
+    tone(c, o, t, { wave: 0.5, f0: 200, f1: 55, dur: 0.1, vol: 0.26 });
+    [[0.03, 3800, 0.28], [0.06, 2400, 0.24], [0.09, 4400, 0.2], [0.12, 2900, 0.15], [0.155, 3600, 0.1]]
+      .forEach(([dt, freq, vol]) => noise(c, o, t + dt, { dur: 0.03, vol, freq, q: 1.4 }));
+    tone(c, o, t + 0.01, { wave: 0.25, f0: 420, f1: 1700, dur: 0.11, vol: 0.13 });
+    for (const n of ['C6', 'E6', 'G6']) tone(c, o, t + 0.03, { wave: 0.125, f0: N(n), dur: 0.09, vol: 0.07, release: 0.06 });
   },
   collect: (c, o, t) => arp(c, o, t, ['C6', 'E6', 'G6', 'C7'], 0.04, { wave: 0.125, vol: 0.18 }),
   invincibleStart: (c, o, t) => {
