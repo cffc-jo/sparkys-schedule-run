@@ -1,6 +1,5 @@
 // Outbound links. Edit here; no code changes needed.
 export const LINKS = {
-  scheduleUrl: 'https://www.chicagofirefc.com/schedule/',
   // End-screen PRESALE ACCESS button. PLACEHOLDER: swap in the real presale page before launch.
   presaleUrl: 'https://www.chicagofirefc.com/',
   utm: {

@@ -357,8 +357,7 @@ body {
 .opponents .tag.away { background: var(--c-flag-blue); color: var(--c-navy); }
 
 .end-buttons { display: grid; gap: calc(var(--u) * 7); }
-.end-row { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 7); }
-.end-row .btn { font-size: calc(var(--u) * 7); padding-left: calc(var(--u) * 3); padding-right: calc(var(--u) * 3); }
+.end-buttons > .btn-secondary { font-size: calc(var(--u) * 9); }
 .end-panel .btn-primary { font-size: calc(var(--u) * 12); }
 
 @media (prefers-reduced-motion: reduce) {

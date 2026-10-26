@@ -16,7 +16,7 @@ import { createUI } from './ui/ui.js';
 import { createModal } from './ui/modal.js';
 import { fillScheduleList } from './ui/scheduleList.js';
 import { audio } from './audio/audio.js';
-import { scheduleUrl, presaleUrl } from './links.js';
+import { presaleUrl } from './links.js';
 import { track } from './analytics.js';
 import { isDebug } from './debugFlag.js';
 import { createDebugTools } from './debug.js';
@@ -187,7 +187,6 @@ async function boot() {
     if (v !== undefined) el.textContent = v;
   });
   frame.querySelectorAll('img[data-icon]').forEach((img) => { img.src = iconDataURL(img.dataset.icon); });
-  frame.querySelectorAll('[data-action="schedule"]').forEach((a) => { a.href = scheduleUrl(); });
   frame.querySelectorAll('[data-action="presale"]').forEach((a) => { a.href = presaleUrl(); });
 
   const modal = createModal(document.getElementById('modal'), {
@@ -222,7 +221,6 @@ async function boot() {
     resume: () => app.scene.resume && app.scene.resume(),
     restart: () => app.go('play'),
     quit: () => app.go('title'),
-    schedule: (el) => track('schedule_click', { source: el.dataset.source }), // link opens natively
     help: () => modal.open(),
     'schedule-popup': () => openSchedule(),
     'close-schedule': () => scheduleModal.close(),

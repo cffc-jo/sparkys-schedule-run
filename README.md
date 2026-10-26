@@ -53,7 +53,7 @@ The repo root **is** the site. All paths are relative, so it works under `https:
 
 If the game moves to a different address (another repo or a custom domain), update the **absolute** share-preview URLs in `index.html` (`og:url`, `og:image`, `twitter:image`). Social networks can't read relative paths. Everything else is relative and moves as-is.
 
-The app's link can be a plain `<a href>` to the Pages URL. External links in the game (**View schedule**, **Presale access**) open in the same window, replacing the game.
+The app's link can be a plain `<a href>` to the Pages URL. The game's one external link, **Presale access** (end screen and the title screen's schedule pop-up), opens in the same window, replacing the game.
 
 ## Swapping in the 2027-28 schedule and logos
 
@@ -192,13 +192,12 @@ Planned design, for context:
 | `game_start` | A run starts | `{ matches }` |
 | `game_complete` | Sparky crosses the finish | `{ finalTimeMs, rawTimeMs, penalties }` |
 | `schedule_open` | **View schedule** on the title screen (opens the in-game schedule pop-up) | `{ source: 'title' }` |
-| `schedule_click` | **View schedule** on the end screen (opens the club site) | `{ source: 'end' }` |
 | `presale_click` | **Presale access** tapped (end screen, or the title screen's schedule pop-up) | `{ source: 'end' \| 'title', finalTimeMs }` |
 | `play_again` | **Play again** on the end screen | — |
 | `tutorial_complete` | **Let's go!** on the last tutorial card | `{ step }` |
 | `tutorial_skip` | **Skip** or Esc during the tutorial | `{ step }` (the card they left on) |
 
-Outbound links (schedule, presale access) and UTM tags: `config/links.js`.
+Outbound link (presale access) and UTM tags: `config/links.js`.
 
 ## Debug mode and tests
 
@@ -293,7 +292,7 @@ Other config files:
 | `config/schedule.json` | Season and matches |
 | `config/palette.js` | Official club colours (`PALETTE`) and approved background-only scenery colours per season (`SEASONS`: winter, spring, summer, fall, including weather) |
 | `config/sprites.js` | Sparky frame map and hitboxes |
-| `config/links.js` | Schedule URL, presale URL (placeholder: chicagofirefc.com), UTM tags |
+| `config/links.js` | Presale URL (placeholder: chicagofirefc.com), UTM tags |
 
 ## Project structure
 
@@ -336,7 +335,6 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 **Title screen**
 - [ ] Sparky idles and blinks, and the LED boards scroll. The title loop plays after the first tap.
 - [ ] **View schedule** on the title screen opens the schedule pop-up (same list as the end screen); it closes with the X, Esc or a tap outside, and its full-width PRESALE ACCESS button opens the presale page in the same window.
-- [ ] **View schedule** on the end screen opens chicagofirefc.com/schedule with the `utm_*` tags, in the same window (including inside the in-app webview).
 - [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**.
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.
 
@@ -397,4 +395,4 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - **Seasons:** as Sparky passes each box, the sky, clouds, sun and pitch take on the season of that match's date (`js/season.js`): winter until Mar 19, spring Mar 20–Jun 20, summer Jun 21–Sep 21, fall Sep 22–Nov 20, then winter again (equinox and solstice dates split the overlapping months). The title and the start of a run use the first dated match's season. Undated (`TBD`) matches keep the current season. Colours, weather (`WEATHER.rate` = particles per second) and pitch-side props (`DECOR`, `DECOR_OCTOBER`: sprite + chance per slot) for each season are in `SEASONS` in `config/palette.js`. Prop art is in `js/art/decorArt.js`.
 - **Floating boxes hang from a cable** so they can only be ducked, never jumped over.
 - **Swipe down on the ground** briefly starts a hop, because jump fires instantly on touch. It then slams back down and ducks within about 20 ms.
-- **Placeholder schedule:** the 2026 Chicago Fire regular season, from the MLS stats API, matching the club's schedule release except Vancouver (moved). Two matches were changed after release: **Vancouver (match 27)** moved to Oct 6 because of wildfire smoke, and **Columbus (match 34)** moved venue to SeatGeek Stadium. Replace the whole file at release.
+- **Demo schedule:** `config/schedule.json` holds a FICTIONAL 2027-28 schedule (35 matches, July 2027 – May 2028, midwinter break after match 18) for demos and testing, with `"isDemo": true`. Replace the whole file at release and set `"isDemo": false`.

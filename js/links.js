@@ -7,10 +7,6 @@ function withUtm(href) {
   return url.toString();
 }
 
-export function scheduleUrl() {
-  return withUtm(LINKS.scheduleUrl);
-}
-
 export function presaleUrl() {
   return withUtm(LINKS.presaleUrl);
 }
