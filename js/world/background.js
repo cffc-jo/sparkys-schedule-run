@@ -2,10 +2,12 @@
 // boards and a mowed grass pitch. Layers are pre-rendered and scrolled with parallax.
 // The sky, clouds and pitch follow the seasons (setSeason), crossfading over a couple of seconds,
 // with light weather on top: snow in winter, petals in spring, leaves in fall.
+// launchSleigh() sends Santa's sleigh across the sky (the midwinter break).
 import { PALETTE as P, SEASONS } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { textSprite } from '../pixelText.js';
 import { decorSprites } from '../art/decorArt.js';
+import { buildSleighArt } from '../art/sleighArt.js';
 
 const W = GAME.view.width;
 const H = GAME.view.height;
@@ -469,6 +471,59 @@ export function createBackground({ reducedMotion = () => false, sponsorLogo = nu
 
   const wrap = (v, m) => ((v % m) + m) % m;
 
+  // ---- Santa's sleigh flyover: climbs across the sky behind the skyline, trailing sparkles ----
+  const SLEIGH_SECONDS = 1.9;
+  let sleighArt = null;
+  let sleigh = null; // { t, sparkAcc, sparks[] }
+
+  function sleighPos(t) {
+    const p = t / SLEIGH_SECONDS;
+    return { x: Math.round(-80 + p * (W + 100)), y: Math.round(150 - p * 46 + Math.sin(t * 7) * 2) };
+  }
+
+  function updateSleigh(dt) {
+    if (!sleigh) return;
+    sleigh.t += dt;
+    if (sleigh.t < SLEIGH_SECONDS) {
+      sleigh.sparkAcc += dt * 45;
+      const { x, y } = sleighPos(sleigh.t);
+      while (sleigh.sparkAcc >= 1) {
+        sleigh.sparkAcc -= 1;
+        sleigh.sparks.push({ x: x + 2 + Math.random() * 4, y: y + 9 + Math.random() * 3, vy: 8 + Math.random() * 14, age: 0, life: 0.5 + Math.random() * 0.4, gold: Math.random() < 0.6 });
+      }
+    }
+    for (const s of sleigh.sparks) { s.age += dt; s.y += s.vy * dt; }
+    sleigh.sparks = sleigh.sparks.filter((s) => s.age < s.life);
+    if (sleigh.t >= SLEIGH_SECONDS && !sleigh.sparks.length) sleigh = null;
+  }
+
+  // 1px reins, pixel by pixel
+  function rein(ctx, x0, y0, x1, y1) {
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let i = 0; i <= n; i++) ctx.fillRect(Math.round(x0 + ((x1 - x0) * i) / n), Math.round(y0 + ((y1 - y0) * i) / n), 1, 1);
+  }
+
+  function drawSleigh(ctx) {
+    if (!sleigh) return;
+    for (const s of sleigh.sparks) {
+      if (s.age > s.life * 0.6 && Math.floor(s.age * 20) % 2) continue; // twinkle out
+      ctx.fillStyle = s.gold ? '#F2C230' : P.WHITE;
+      ctx.fillRect(Math.round(s.x), Math.round(s.y), 1, 1);
+    }
+    if (sleigh.t >= SLEIGH_SECONDS) return;
+    const { x, y } = sleighPos(sleigh.t);
+    const frame = Math.floor(sleigh.t / 0.12) % 2;
+    const d2 = { x: x + 27, y: y - 3 + (frame ? 1 : 0) };
+    const d1 = { x: x + 42, y: y - 5 + (frame ? 0 : 1) };
+    ctx.fillStyle = '#5E3A1C';
+    rein(ctx, x + 8, y + 5, d2.x + 10, d2.y + 4);
+    rein(ctx, d2.x + 10, d2.y + 4, d1.x + 10, d1.y + 4);
+    ctx.drawImage(sleighArt.sleigh, x, y);
+    ctx.drawImage(sleighArt.reindeer[frame], d2.x, d2.y);
+    ctx.drawImage(sleighArt.rudolph[1 - frame], d1.x, d1.y);
+    if (Math.floor(sleigh.t * 8) % 2) { ctx.fillStyle = 'rgba(255, 60, 60, 0.45)'; ctx.fillRect(d1.x + 12, d1.y + 2, 3, 3); } // nose glow
+  }
+
   return {
     // speed: world scroll speed in px/s (0 on menus). boardSpeed scrolls the LED text independently.
     update(dt, speed, boardSpeed = GAME.world.titleBoardSpeed) {
@@ -486,7 +541,16 @@ export function createBackground({ reducedMotion = () => false, sponsorLogo = nu
         if (fade >= 1) prevSeason = null;
       }
       updateWeather(dt, speed);
+      updateSleigh(dt);
     },
+
+    // Santa's sleigh across the sky (skipped with reduced motion)
+    launchSleigh() {
+      if (reducedMotion()) return;
+      sleighArt = sleighArt || buildSleighArt();
+      sleigh = { t: 0, sparkAcc: 0, sparks: [] };
+    },
+    clearSleigh() { sleigh = null; },
 
     // Switch to 'winter' | 'spring' | 'summer' | 'fall' (`isOctober` adds jack-o'-lanterns in fall).
     // Crossfades unless `instant`.
@@ -517,6 +581,8 @@ export function createBackground({ reducedMotion = () => false, sponsorLogo = nu
       } else {
         drawLayer(ctx, season, 1);
       }
+
+      drawSleigh(ctx); // in the sky, behind the skyline
 
       const fx = Math.floor(state.far);
       ctx.drawImage(farCity, -fx, BOARD_TOP - farCity.height);

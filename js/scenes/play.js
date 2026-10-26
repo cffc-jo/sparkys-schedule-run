@@ -125,6 +125,7 @@ export function createPlayScene(app) {
     particles.clear();
     banner.clear();
     breaksShown = 0;
+    app.bg.clearSleigh();
     const opening = openingScenery(app.schedule.matches);
     app.bg.setSeason(opening.season, { instant: true, isOctober: opening.isOctober });
     sparky.reset();
@@ -275,6 +276,8 @@ export function createPlayScene(app) {
       const next = course.obstacles[br.afterIndex + 1].match;
       const back = formatMatchDate(next.date, next.dayOfWeek);
       banner.showNotice('MIDWINTER BREAK', back ? `BACK ${back}` : '', { snow: true });
+      app.bg.launchSleigh();
+      sfx('sleighBells');
     }
   }
 

@@ -104,6 +104,13 @@ export const SFX = {
     tone(c, o, t + 0.01, { wave: 0.25, f0: 420, f1: 1700, dur: 0.11, vol: 0.13 });
     for (const n of ['C6', 'E6', 'G6']) tone(c, o, t + 0.03, { wave: 0.125, f0: N(n), dur: 0.09, vol: 0.07, release: 0.06 });
   },
+  // Sleigh bells for Santa's flyover: a quick shimmer of high jingles
+  sleighBells: (c, o, t) => {
+    ['E7', 'G7', 'E7', 'C7', 'G7', 'E7', 'G7', 'C8'].forEach((n, i) => {
+      tone(c, o, t + i * 0.07, { wave: 'triangle', f0: N(n), dur: 0.06, vol: 0.07 });
+      noise(c, o, t + i * 0.07, { dur: 0.04, vol: 0.05, freq: 9000, type: 'highpass' });
+    });
+  },
   collect: (c, o, t) => arp(c, o, t, ['C6', 'E6', 'G6', 'C7'], 0.04, { wave: 0.125, vol: 0.18 }),
   invincibleStart: (c, o, t) => {
     arp(c, o, t + 0.16, ['C5', 'E5', 'G5', 'C6', 'E6', 'G6'], 0.045, { wave: 0.25, vol: 0.16 });
