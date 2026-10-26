@@ -218,7 +218,7 @@ async function boot() {
     'replay-tutorial': () => { modal.close(); app.go('tutorial'); },
     continue: () => afterFinish(),
     'play-again': () => { track('play_again'); app.go('play'); },
-    presale: () => track('presale_click', { finalTimeMs: app.lastResult && app.lastResult.finalTimeMs }), // link opens natively
+    presale: (el) => track('presale_click', { source: el.dataset.source || 'end', finalTimeMs: app.lastResult && app.lastResult.finalTimeMs }), // link opens natively
     resume: () => app.scene.resume && app.scene.resume(),
     restart: () => app.go('play'),
     quit: () => app.go('title'),
@@ -226,7 +226,6 @@ async function boot() {
     help: () => modal.open(),
     'schedule-popup': () => openSchedule(),
     'close-schedule': () => scheduleModal.close(),
-    'schedule-play': () => { scheduleModal.close(); app.go(load(TUTORIAL_KEY, false) ? 'play' : 'tutorial'); },
     'close-modal': () => modal.close(),
     mute: () => audio.toggleMute(),
     pause: () => app.scene && app.scene.togglePause && app.scene.togglePause(),

@@ -193,7 +193,7 @@ Planned design, for context:
 | `game_complete` | Sparky crosses the finish | `{ finalTimeMs, rawTimeMs, penalties }` |
 | `schedule_open` | **View schedule** on the title screen (opens the in-game schedule pop-up) | `{ source: 'title' }` |
 | `schedule_click` | **View schedule** on the end screen (opens the club site) | `{ source: 'end' }` |
-| `presale_click` | **Presale access** tapped (end screen) | `{ finalTimeMs }` |
+| `presale_click` | **Presale access** tapped (end screen, or the title screen's schedule pop-up) | `{ source: 'end' \| 'title', finalTimeMs }` |
 | `play_again` | **Play again** on the end screen | — |
 | `tutorial_complete` | **Let's go!** on the last tutorial card | `{ step }` |
 | `tutorial_skip` | **Skip** or Esc during the tutorial | `{ step }` (the card they left on) |
@@ -335,7 +335,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 
 **Title screen**
 - [ ] Sparky idles and blinks, and the LED boards scroll. The title loop plays after the first tap.
-- [ ] **View schedule** on the title screen opens the schedule pop-up (same list as the end screen); it closes with the X, CLOSE, Esc or a tap outside, and PLAY starts a run.
+- [ ] **View schedule** on the title screen opens the schedule pop-up (same list as the end screen); it closes with the X, Esc or a tap outside, and its full-width PRESALE ACCESS button opens the presale page in the same window.
 - [ ] **View schedule** on the end screen opens chicagofirefc.com/schedule with the `utm_*` tags, in the same window (including inside the in-app webview).
 - [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**.
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.

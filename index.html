@@ -131,7 +131,7 @@
               <button class="btn btn-primary" data-action="play-again">PLAY AGAIN</button>
               <div class="end-row">
                 <a class="btn btn-secondary" data-action="schedule" data-source="end">VIEW<br>SCHEDULE</a>
-                <a class="btn btn-secondary" data-action="presale">PRESALE ACCESS</a>
+                <a class="btn btn-secondary" data-action="presale" data-source="end">PRESALE ACCESS</a>
               </div>
             </div>
           </div>
@@ -146,10 +146,7 @@
           </button>
           <h2 id="schedule-modal-title">YOUR <span data-bind-text="season"></span> SCHEDULE</h2>
           <ol class="opponents scrollable" tabindex="0" aria-labelledby="schedule-modal-title" data-schedule-list></ol>
-          <div class="modal-buttons">
-            <button class="btn btn-secondary" data-action="close-schedule">CLOSE</button>
-            <button class="btn btn-primary" data-action="schedule-play">PLAY</button>
-          </div>
+          <a class="btn btn-primary schedule-presale" data-action="presale" data-source="title">PRESALE ACCESS</a>
         </div>
       </div>
 

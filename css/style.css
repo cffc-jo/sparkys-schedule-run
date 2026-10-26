@@ -402,6 +402,7 @@ body {
 /* Schedule pop-up: fills the frame so the list gets the room */
 .schedule-panel { height: 100%; }
 .schedule-panel h2 { font-size: calc(var(--u) * 10); line-height: 1.5; }
+.schedule-presale { width: 100%; font-size: calc(var(--u) * 11); }
 .modal-body {
   overflow-y: auto;
   touch-action: pan-y;
