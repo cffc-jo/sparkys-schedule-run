@@ -335,7 +335,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 **Title screen**
 - [ ] Sparky idles and blinks, and the LED boards scroll. The title loop plays after the first tap.
 - [ ] **View schedule** on the title screen opens the schedule pop-up (same list as the end screen); it closes with the X, Esc or a tap outside, and its full-width PRESALE ACCESS button opens the presale page in the same window.
-- [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**.
+- [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**. It lists only the tap/swipe controls on phones and only the keyboard controls on desktop.
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.
 
 **First-time tutorial**
@@ -344,7 +344,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] **Next** (or Enter / →) advances and ← goes back. The last button is **Let's go!**, which starts the countdown.
 - [ ] **Skip** (or Esc) jumps straight into the run.
 - [ ] After finishing or skipping once, **Play** goes straight to the run, including after a reload.
-- [ ] **How to Play → Tutorial** replays it from the title or end screen. The button is hidden mid-run.
+- [ ] **How to Play → Tutorial** replays it from any screen. Mid-run it leaves the run; the tutorial then starts a fresh one.
 
 **Gameplay**
 - [ ] 3-2-1-GO with beeps. The timer starts on GO and the theme starts on GO.
