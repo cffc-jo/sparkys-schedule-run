@@ -97,7 +97,8 @@ function shapeFor(type, o) {
   return { h: s, rects: [{ x0: 0, x1: s, y0: 0, y1: s, inset: true }] };
 }
 
-export function buildCourse(matches, GAME) {
+// breakAfterMatch: the match number the midwinter break follows (adds open pitch after that box)
+export function buildCourse(matches, GAME, { breakAfterMatch = null } = {}) {
   const { course, obstacles: o, physics } = GAME;
   const vmax = maxSpeed(GAME.speed);
   const seedStr = course.seed || matches.map((m) => m.opponent).join('|');
@@ -106,6 +107,7 @@ export function buildCourse(matches, GAME) {
   const types = assignTypes(n, course, rng);
 
   const list = [];
+  const breaks = [];
   let x = course.leadIn;
   for (let i = 0; i < n; i++) {
     const type = types[i];
@@ -120,11 +122,16 @@ export function buildCourse(matches, GAME) {
     const vHere = Math.min(currentSpeed(i + 1, GAME.speed), vmax);
     ob.vMax = vHere;
     ob.gapAfter = (recoverTime(type, physics) + course.reactionGap + extra) * vHere;
+    if (breakAfterMatch != null && matches[i].matchNumber === breakAfterMatch && i < n - 1) {
+      const len = (course.midwinterBreakSeconds || 0) * vHere;
+      breaks.push({ afterIndex: i, x: ob.x + ob.w, len, speed: vHere });
+      ob.gapAfter += len;
+    }
     x += ob.w + ob.gapAfter;
   }
   const last = list[list.length - 1];
   const finishX = last ? last.x + last.w + recoverTime(last.type, physics) * last.vMax + course.finishRunout : course.leadIn;
-  return { obstacles: list, finishX, vmax, balls: placeBalls(list, GAME) };
+  return { obstacles: list, finishX, vmax, breaks, balls: placeBalls(list, GAME) };
 }
 
 // Soccer balls sit where clearing a nearby box naturally collects them, never forcing a hit:

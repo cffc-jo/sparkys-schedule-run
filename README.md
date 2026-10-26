@@ -7,7 +7,7 @@ An 8-bit browser game for the **Chicago Fire FC 2027-28 schedule release**. Spar
 - **Size:** about 550 KB in total, with everything preloaded behind an 8-bit loading bar. It works offline once loaded.
 - **Targets:** mobile-first portrait, iOS Safari, Android Chrome, in-app webviews (iOS WKWebView, Android WebView) and desktop.
 
-> **Before launch: brand/legal review.** The opponent logos in `assets/logos/` are **stylised 8-bit renderings of other clubs' marks**, and `config/schedule.json` currently holds the **2026** schedule as a placeholder. Get the logo usage approved and swap in the real 2027-28 schedule (see [Swapping in the 2027-28 schedule](#swapping-in-the-2027-28-schedule-and-logos)). The presenting partner, **Carvana**, appears on the start screen, the end screen and a skyline billboard, using their official logo (`assets/sponsors/carvana.svg`, unaltered, on white, logo only); confirm those placements with the partner too.
+> **Before launch: brand/legal review.** The opponent logos in `assets/logos/` are **stylised 8-bit renderings of other clubs' marks**, and `config/schedule.json` currently holds a **fictional demo 2027-28 schedule** (`"isDemo": true`, which shows a "DEMO SCHEDULE" tag on the title and end screens). Get the logo usage approved and swap in the real 2027-28 schedule with `"isDemo": false` (see [Swapping in the 2027-28 schedule](#swapping-in-the-2027-28-schedule-and-logos)). The presenting partner, **Carvana**, appears on the start screen, the end screen and a skyline billboard, using their official logo (`assets/sponsors/carvana.svg`, unaltered, on white, logo only); confirm those placements with the partner too.
 
 ---
 
@@ -59,13 +59,16 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
 `config/schedule.json` is the only file that needs editing for the release.
 
-1. **Edit `config/schedule.json`.** Keep one entry per regular-season match, in date order:
+1. **Edit `config/schedule.json`.** Keep one entry per regular-season match, in date order, and set `"isDemo": false`:
 
    ```json
    {
      "season": "2027-28",
+     "isDemo": false,
+     "note": "Official 2027-28 schedule",
+     "midwinterBreakAfterMatch": 18,
      "matches": [
-       { "matchNumber": 1, "opponent": "Inter Miami CF", "code": "MIA", "logo": "assets/logos/MIA.png", "homeAway": "HOME", "date": "2027-08-21" }
+       { "matchNumber": 12, "opponent": "New England Revolution", "code": "NE", "homeAway": "HOME", "date": "2027-10-16", "dayOfWeek": "Sat", "kickoff": "7:30 PM CT", "conference": "East", "half": 1 }
      ]
    }
    ```
@@ -73,16 +76,22 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
    | Field | Notes |
    |---|---|
    | `season` | Shown on the title screen and the end screen ("YOUR 2027-28 SCHEDULE"). |
+   | `isDemo` | `true` shows a small "DEMO SCHEDULE" tag on the title and end screens. **Set it to `false` for the real release.** |
+   | `note` | Free text for people editing the file. The game ignores it. |
+   | `midwinterBreakAfterMatch` | Optional. The match number the midwinter break follows. Adds a stretch of open pitch after that box with a "MIDWINTER BREAK" banner, and a divider in the end-screen list. Leave it out for no break. |
    | `matchNumber` | Shown on the reveal banner and in the opponents list. |
    | `opponent` | Official club name. Accents are fine (they're removed for display: "CF MONTREAL"). |
-   | `code` | Club code. It's the logo file name and the fallback label if a logo is missing. |
-   | `logo` | `assets/logos/<CODE>.png`. **Case matters on GitHub Pages:** `MIA.png` ≠ `mia.png`. |
+   | `code` | Club code. The logo is loaded from `assets/logos/<code>.png`, and the code is the fallback label if a logo is missing. **Case matters on GitHub Pages:** `MIA.png` ≠ `mia.png`. (An optional `logo` path overrides this.) |
    | `homeAway` | `HOME` or `AWAY`. Home boxes have a solid red frame; away boxes a dashed sky-blue frame. |
-   | `date` | `YYYY-MM-DD` (shown as "SAT, AUG 21"), or any text such as `"TBD"` (shown as typed). The date also sets the **season** of the scenery after that box (see below). |
+   | `date` | `YYYY-MM-DD` (shown as "SAT, OCT 16"), or any text such as `"TBD"` (shown as typed). The date also sets the **season** of the scenery after that box (see below). |
+   | `dayOfWeek` | Optional, e.g. `"Sat"`. Worked out from the date if left out. If it doesn't match the date, the browser console warns. |
+   | `kickoff` | Optional, e.g. `"7:30 PM CT"`. Shown after the date on the reveal banner and in the end-screen list. |
+   | `conference` | Optional, `"East"` or `"West"`. Kept with the match for future use. |
+   | `half` | Optional, `1` or `2`: which half of the summer-to-spring season. Kept with the match for future use. |
 
    - The number of boxes comes from `matches.length`, so any number of matches works.
    - Opponents the Fire play more than once simply appear more than once.
-   - The `_note` field in the placeholder file can be deleted.
+   - `js/schedule.js` reads the file and fills in the defaults above. Problems such as a wrong weekday show as console warnings; the game still runs.
 
 2. **Logos for new clubs:**
    1. Add the high-res file as `assets/logos-source/<CODE>@3x.png`.
@@ -91,7 +100,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
    If a logo is missing, the box shows the club code instead, so nothing breaks.
 
-3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:54).
+3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:57.5 for 35 matches, including the midwinter break).
 
 4. **Commit and push.** Pages redeploys automatically.
 
@@ -248,6 +257,7 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | course | `typeMix` | 60/25/15 | Ground / floating / tall |
 | course | `noBackToBackHardUntil` | 0.6 | No two hard boxes in a row for this fraction of the run |
 | course | `finishRunout` | 220 | Ground from the last box to the goal |
+| course | `midwinterBreakSeconds`, `midwinterBannerDelay` | 2.4, 1.4 | Extra open pitch at the midwinter break; when its banner appears |
 | obstacles | `boxSize`, `logoSize` | 30, 24 | Box and logo slot |
 | obstacles | `floatingBottom` | 20 | Gap under floating boxes (must be between duck and stand heights) |
 | obstacles | `tallCrateHeight` | 44 | Crate under tall boxes (forces a double jump) |
@@ -299,6 +309,7 @@ js/input/               input.js (touch/mouse/keyboard), gesture.js (classifier)
 js/course.js            deterministic course builder
 js/timer.js, speed.js   timer/penalty math, speed formula
 js/best.js, share.js    personal best, Web Share / copy fallback
+js/schedule.js, format.js  schedule.json schema (defaults, logo from code, warnings), date + kickoff formatting
 js/leaderboard.js       stub (future)
 js/analytics.js         stub (future)
 js/debug.js             ?debug=1 tools

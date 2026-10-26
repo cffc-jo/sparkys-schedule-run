@@ -12,6 +12,7 @@ import { ballFrames, smallBallFrames } from '../art/ballArt.js';
 import { createTimer, formatTime } from '../timer.js';
 import { currentSpeed } from '../speed.js';
 import { buildCourse } from '../course.js';
+import { formatMatchDate } from '../format.js';
 import { createInput } from '../input/input.js';
 import { track } from '../analytics.js';
 import { isDebug } from '../debugFlag.js';
@@ -59,7 +60,7 @@ export function createPlayScene(app) {
   const sparky = createSparky(GAME.physics, SPARKY_SHEET.hitbox);
   const anim = createAnimator(SPARKY_SHEET);
   const timer = createTimer(GAME.penalties.penaltySeconds);
-  const course = buildCourse(app.schedule.matches, GAME);
+  const course = buildCourse(app.schedule.matches, GAME, { breakAfterMatch: app.schedule.midwinterBreakAfterMatch });
   const total = course.obstacles.length;
   const particles = createParticles();
   const banner = createBanner();
@@ -73,6 +74,7 @@ export function createPlayScene(app) {
   let countT = 0;
   let t = 0;
   let dist = 0;
+  let breaksShown = 0; // midwinter break banners already shown (course.breaks, in order)
   let speed = GAME.speed.baseSpeed;
   let cleared = 0;
   let grace = 0;
@@ -122,6 +124,7 @@ export function createPlayScene(app) {
     result = null;
     particles.clear();
     banner.clear();
+    breaksShown = 0;
     const opening = openingScenery(app.schedule.matches);
     app.bg.setSeason(opening.season, { instant: true, isOctober: opening.isOctober });
     sparky.reset();
@@ -264,6 +267,15 @@ export function createPlayScene(app) {
       if (ball.got || Math.abs(ball.x - dist) > 30) continue;
       if (circleHitsBox(ball.x, ball.y, BALL.radius, sb)) collectBall(ball);
     }
+
+    // Midwinter break: a stretch of open pitch with its own banner
+    const br = course.breaks[breaksShown];
+    if (br && dist >= br.x + GAME.course.midwinterBannerDelay * br.speed) {
+      breaksShown++;
+      const next = course.obstacles[br.afterIndex + 1].match;
+      const back = formatMatchDate(next.date, next.dayOfWeek);
+      banner.showNotice('MIDWINTER BREAK', back ? `BACK ${back}` : '', { snow: true });
+    }
   }
 
   function updateEffects(dt, worldSpeed) {
@@ -297,6 +309,7 @@ export function createPlayScene(app) {
     skipToFinish() {
       if (phase !== 'run') return;
       for (const b of boxes) if (b.state === 'pending') { b.state = 'cleared'; cleared++; }
+      breaksShown = course.breaks.length;
       dist = course.finishX - 120;
     },
 

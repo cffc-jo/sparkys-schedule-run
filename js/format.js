@@ -1,22 +1,49 @@
 // Display formatting for schedule data.
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// "2026-02-21" -> "SAT, FEB 21". Any other text (e.g. "TBD") is shown as-is, upper-cased.
-// Parsed as a calendar date (UTC) so the day never shifts with the viewer's timezone.
-export function formatMatchDate(date) {
-  if (!date) return '';
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date).trim());
-  if (!m) return String(date).toUpperCase();
+// "2027-10-16" -> calendar date (UTC, so the day never shifts with the viewer's timezone), or null
+function parseDate(date) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || '').trim());
+  if (!m) return null;
   const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-  if (Number.isNaN(d.getTime())) return String(date).toUpperCase();
-  return `${DAYS[d.getUTCDay()]}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// "2027-10-16" -> "Sat" ('' for text dates such as "TBD")
+export function weekdayOf(date) {
+  const d = parseDate(date);
+  return d ? DAYS[d.getUTCDay()] : '';
+}
+
+// "2027-10-16" -> "SAT, OCT 16". Any other text (e.g. "TBD") is shown as-is, upper-cased.
+// `dayOfWeek` from the schedule wins over the computed weekday.
+export function formatMatchDate(date, dayOfWeek) {
+  if (!date) return '';
+  const d = parseDate(date);
+  if (!d) return String(date).toUpperCase();
+  const day = (dayOfWeek || DAYS[d.getUTCDay()]).toUpperCase();
+  return `${day}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
+}
+
+// Date and kickoff for a match: { date: "SAT, OCT 16", kickoff: "7:30 PM CT" }
+export function matchWhen(match) {
+  return {
+    date: formatMatchDate(match.date, match.dayOfWeek),
+    kickoff: match.kickoff ? String(match.kickoff).toUpperCase() : '',
+  };
+}
+
+// One line: "SAT, OCT 16 · 7:30 PM CT"
+export function formatMatchWhen(match) {
+  const w = matchWhen(match);
+  return [w.date, w.kickoff].filter(Boolean).join(' · ');
 }
 
 // Opponent name for display: upper case with accents removed ("CF Montréal" -> "CF MONTREAL"),
 // so it always renders cleanly in the pixel font. schedule.json keeps the official spelling.
 export function displayName(name) {
-  return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  return String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
 }
 
 export function isHome(match) {

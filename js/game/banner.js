@@ -1,11 +1,12 @@
 // The schedule-reveal banner: slides in at the top each time a box is cleared or hit.
 //   [logo] MATCH 12  [HOME]
-//          VS. NEW YORK CITY FC
-//          SAT, OCT 10
+//          VS. NEW ENGLAND REVOLUTION
+//          SAT, OCT 16 · 7:30 PM CT      (date and kickoff split over two lines if too wide)
+// It also shows short notices, e.g. the midwinter break.
 import { PALETTE as P } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { drawText, textWidth } from '../pixelText.js';
-import { formatMatchDate, isHome, displayName } from '../format.js';
+import { matchWhen, isHome, displayName } from '../format.js';
 
 const W = GAME.view.width;
 const PANEL = { x: 6, w: W - 12, h: 42, y: 60 }; // sits under the HUD and invincibility meter
@@ -42,13 +43,29 @@ function trimToFit(str, maxWidth) {
   return s;
 }
 
+// Date + kickoff: one line if it fits, otherwise date over kickoff
+export function whenLines(match, maxWidth = TEXT_W) {
+  const { date, kickoff } = matchWhen(match);
+  const one = [date, kickoff].filter(Boolean).join(' · ');
+  if (!one) return [];
+  if (textWidth(one) <= maxWidth || !date || !kickoff) return [trimToFit(one, maxWidth)];
+  return [trimToFit(date, maxWidth), trimToFit(kickoff, maxWidth)];
+}
+
+// 7x7 pixel snowflake
+const SNOWFLAKE = ['...K...', '.K.K.K.', '..KKK..', 'KKKKKKK', '..KKK..', '.K.K.K.', '...K...'];
+function drawSnowflake(ctx, x, y, color) {
+  ctx.fillStyle = color;
+  SNOWFLAKE.forEach((row, dy) => [...row].forEach((ch, dx) => { if (ch === 'K') ctx.fillRect(x + dx, y + dy, 1, 1); }));
+}
+
 function easeOutBack(t) {
   const c = 1.6;
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
 }
 
 export function createBanner() {
-  let cur = null; // { match, art, age, title, name[], date }
+  let cur = null; // match: { match, art, age, title, name[], when[] } | notice: { notice, age, title, sub }
 
   return {
     show(match, art) {
@@ -60,9 +77,16 @@ export function createBanner() {
         home: isHome(match),
         title: `MATCH ${match.matchNumber}`,
         name: wrapName(name),
-        date: formatMatchDate(match.date),
+        when: whenLines(match),
       };
     },
+
+    // A short notice in the same slot, e.g. showNotice('MIDWINTER BREAK', 'BACK SAT, FEB 12')
+    showNotice(title, sub = '', { snow = false } = {}) {
+      cur = { notice: true, age: 0, title, sub, snow };
+    },
+
+    get showing() { return cur; },
 
     update(dt) {
       if (!cur) return;
@@ -84,7 +108,7 @@ export function createBanner() {
       }
       const x = PANEL.x;
       const y = Math.round(top + offset);
-      const h = PANEL.h + (cur.name.length - 1) * LINE_H;
+      const h = cur.notice ? (cur.sub ? 34 : 22) : PANEL.h + (cur.name.length - 1 + Math.max(0, cur.when.length - 1)) * LINE_H;
       const flash = cur.age < 0.35 && Math.floor(cur.age * 12) % 2 === 0;
 
       ctx.fillStyle = P.DARK_NAVY;
@@ -95,6 +119,18 @@ export function createBanner() {
       ctx.fillRect(x + 1, y + 1, PANEL.w - 2, h - 2);
       ctx.fillStyle = P.RED;
       ctx.fillRect(x + 1, y + 1, PANEL.w - 2, 1);
+
+      if (cur.notice) {
+        const cx = x + PANEL.w / 2;
+        drawText(ctx, cur.title, cx, y + 6, { color: P.WHITE, align: 'center' });
+        if (cur.snow) {
+          const half = textWidth(cur.title) / 2;
+          drawSnowflake(ctx, Math.round(cx - half - 14), y + 6, P.FLAG_BLUE);
+          drawSnowflake(ctx, Math.round(cx + half + 7), y + 6, P.FLAG_BLUE);
+        }
+        if (cur.sub) drawText(ctx, cur.sub, cx, y + 20, { color: P.FLAG_BLUE, align: 'center' });
+        return;
+      }
 
       if (cur.art) ctx.drawImage(cur.art, x + 6, y + 6, GAME.obstacles.boxSize, GAME.obstacles.boxSize);
 
@@ -111,7 +147,7 @@ export function createBanner() {
       drawText(ctx, tag, tx + 2, y + 5, { color: cur.home ? P.WHITE : P.NAVY });
 
       cur.name.forEach((line, i) => drawText(ctx, line, TEXT_X, y + 18 + i * LINE_H, { color: P.WHITE }));
-      if (cur.date) drawText(ctx, cur.date, TEXT_X, y + 18 + cur.name.length * LINE_H + 1, { color: P.FLAG_BLUE });
+      cur.when.forEach((line, i) => drawText(ctx, line, TEXT_X, y + 18 + (cur.name.length + i) * LINE_H + 1, { color: P.FLAG_BLUE }));
     },
   };
 }

@@ -53,6 +53,8 @@
         <!-- Title screen -->
         <section class="screen" data-screen="title" hidden aria-label="Title screen">
           <h1 class="sr-only">Sparky's Schedule Run</h1>
+          <!-- Shown while schedule.json has "isDemo": true -->
+          <p class="demo-tag" data-demo-tag hidden>DEMO<br>SCHEDULE</p>
           <!-- Presenting partner, tucked under the canvas title banner -->
           <div class="sponsor sponsor-title"><img src="assets/sponsors/carvana.svg" alt="Presented by Carvana" width="158" height="33"></div>
           <div class="title-buttons">
@@ -100,6 +102,7 @@
 
         <!-- End screen -->
         <section class="screen" data-screen="end" hidden aria-labelledby="end-title">
+          <p class="demo-tag" data-demo-tag hidden>DEMO<br>SCHEDULE</p>
           <div class="end-panel panel">
             <h2 id="end-title">THANKS FOR PLAYING!</h2>
             <div class="sponsor"><img src="assets/sponsors/carvana.svg" alt="Presented by Carvana" width="158" height="33"></div>

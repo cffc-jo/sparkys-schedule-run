@@ -11,6 +11,7 @@ import { buildSparkySheet } from './art/sparkyArt.js';
 import { iconDataURL } from './art/icons.js';
 import { createSpriteSheet } from './sprite.js';
 import { createBackground, BILLBOARD_LOGO } from './world/background.js';
+import { normalizeSchedule, scheduleWarnings } from './schedule.js';
 import { createUI } from './ui/ui.js';
 import { createModal } from './ui/modal.js';
 import { audio } from './audio/audio.js';
@@ -174,10 +175,8 @@ async function boot() {
   ], (p) => { loadProgress = p; });
 
   app.assets = assets;
-  app.schedule = assets.schedule;
-  if (!app.schedule || !Array.isArray(app.schedule.matches) || !app.schedule.matches.length) {
-    throw new Error('config/schedule.json has no matches');
-  }
+  app.schedule = normalizeSchedule(assets.schedule); // throws if there are no matches
+  for (const w of scheduleWarnings(app.schedule)) console.warn(`schedule.json: ${w}`);
 
   // Opponent logos (optional: a missing logo shows the club abbreviation instead)
   const logoPaths = [...new Set(app.schedule.matches.map((m) => m.logo).filter(Boolean))];
@@ -241,6 +240,8 @@ async function boot() {
   app.scenes.tutorial = createTutorialScene(app);
   if (isDebug()) app.debug = createDebugTools(app);
   frame.querySelectorAll('[data-bind-text="season"]').forEach((el) => { el.textContent = app.schedule.season; });
+  // "DEMO SCHEDULE" tags until the real schedule (isDemo: false) is dropped in
+  frame.querySelectorAll('[data-demo-tag]').forEach((el) => { el.hidden = !app.schedule.isDemo; });
 
   // Phones turned to landscape show the rotate prompt; pause the run underneath it.
   const landscape = window.matchMedia('(orientation: landscape) and (max-height: 500px) and (pointer: coarse)');

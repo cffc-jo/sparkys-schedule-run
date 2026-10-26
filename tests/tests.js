@@ -1,6 +1,6 @@
 // Dependency-free unit tests. Run in a browser (tests/run.html) or with Node (npm test).
 // Covers: speed formula, timer + penalty math, gesture classifier, obstacle spacing at max
-// speed, course layout rules, jump physics vs obstacle heights, ball placement.
+// speed, course layout rules, jump physics vs obstacle heights, ball placement, schedule schema + midwinter break.
 import { GAME } from '../config/game.js';
 import { currentSpeed, speedMultiplier, maxSpeed } from '../js/speed.js';
 import { createTimer, makeResult, formatTime } from '../js/timer.js';
@@ -9,6 +9,8 @@ import { buildCourse, recoverTime, assignTypes, createRng } from '../js/course.j
 import { createSparky } from '../js/game/sparky.js';
 import { SPARKY_SHEET } from '../config/sprites.js';
 import { seasonForDate, openingSeason, isOctober } from '../js/season.js';
+import { normalizeSchedule, scheduleWarnings } from '../js/schedule.js';
+import { formatMatchDate, formatMatchWhen, weekdayOf } from '../js/format.js';
 
 export const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -128,6 +130,48 @@ test('course: ~60/25/15 mix, easy start, no early hard back-to-back, no tall-tal
 });
 test('course: works for any schedule length (no hard-coded 34)', () => {
   for (const n of [1, 5, 20, 40]) eq(buildCourse(schedule(n), GAME).obstacles.length, n);
+});
+
+// ---------- Schedule schema ----------
+const rawSchedule = {
+  season: '2027-28', isDemo: true, midwinterBreakAfterMatch: 2,
+  matches: [
+    { matchNumber: 1, opponent: 'New England Revolution', code: 'ne', homeAway: 'home', date: '2027-10-16', dayOfWeek: 'Sat', kickoff: '7:30 PM CT', conference: 'East', half: 1 },
+    { matchNumber: 2, opponent: 'Atlanta United', code: 'ATL', homeAway: 'AWAY', date: '2027-12-11', kickoff: '7:30 PM CT', half: 1 },
+    { matchNumber: 3, opponent: 'Nashville SC', code: 'NSH', homeAway: 'AWAY', date: '2028-03-08', dayOfWeek: 'Sat', half: 2 },
+  ],
+};
+test('schedule: logo comes from code; extra fields kept; weekday filled in', () => {
+  const s = normalizeSchedule(rawSchedule);
+  eq(s.isDemo, true);
+  eq(s.midwinterBreakAfterMatch, 2);
+  eq(s.matches[0].code, 'NE');
+  eq(s.matches[0].logo, 'assets/logos/NE.png');
+  eq(s.matches[0].conference, 'East');
+  eq(s.matches[0].half, 1);
+  eq(s.matches[1].dayOfWeek, 'Sat'); // worked out from the date
+  eq(normalizeSchedule({ ...rawSchedule, isDemo: 'yes' }).isDemo, false); // only a real true counts
+  eq(normalizeSchedule({ ...rawSchedule, midwinterBreakAfterMatch: 3 }).midwinterBreakAfterMatch, null); // after the last match: ignored
+});
+test('schedule: date + kickoff formatting, and a wrong weekday is flagged', () => {
+  eq(weekdayOf('2027-10-16'), 'Sat');
+  eq(formatMatchDate('2027-10-16', 'Sat'), 'SAT, OCT 16');
+  eq(formatMatchDate('TBD'), 'TBD');
+  eq(formatMatchWhen(normalizeSchedule(rawSchedule).matches[0]), 'SAT, OCT 16 · 7:30 PM CT');
+  const w = scheduleWarnings(normalizeSchedule(rawSchedule));
+  eq(w.length, 1, w.join('; '));
+  ok(/match 3: 2028-03-08 is a Wed/.test(w[0]), w[0]);
+});
+test('course: the midwinter break adds open pitch after that match only', () => {
+  const m = schedule(20);
+  const plain = buildCourse(m, GAME);
+  const withBreak = buildCourse(m, GAME, { breakAfterMatch: 8 });
+  eq(withBreak.breaks.length, 1);
+  eq(withBreak.breaks[0].afterIndex, 7);
+  const extra = withBreak.breaks[0].len;
+  near(extra, GAME.course.midwinterBreakSeconds * withBreak.breaks[0].speed, 1e-6);
+  for (let i = 0; i < 20; i++) near(withBreak.obstacles[i].x - plain.obstacles[i].x, i <= 7 ? 0 : extra, 1e-6, `box ${i}`);
+  eq(buildCourse(m, GAME).breaks.length, 0);
 });
 
 // ---------- Physics vs obstacle heights ----------

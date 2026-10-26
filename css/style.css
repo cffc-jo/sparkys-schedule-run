@@ -149,6 +149,23 @@ body {
 }
 
 /* ---------- Title ---------- */
+/* "DEMO SCHEDULE" tag (schedule.json isDemo: true), top-left corner of the title and end screens */
+.demo-tag {
+  position: absolute;
+  top: calc(var(--u) * 8);
+  left: calc(var(--u) * 6);
+  margin: 0;
+  padding: calc(var(--u) * 3) calc(var(--u) * 4);
+  background: var(--c-white);
+  color: var(--c-red);
+  font-size: calc(var(--u) * 6);
+  line-height: 1.5;
+  text-align: center;
+  letter-spacing: calc(var(--u) * 1);
+  box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy);
+}
+.demo-tag[hidden] { display: none; }
+
 /* Presenting partner lockup: "PRESENTED BY" + logo on a white strip (logo kept on white, unaltered) */
 .sponsor {
   display: flex;
@@ -322,6 +339,18 @@ body {
 .opponents .who { display: grid; min-width: 0; }
 .opponents .who .name { overflow-wrap: anywhere; }
 .opponents .who .date { color: var(--c-flag-blue); }
+.opponents .who .kickoff { color: var(--c-flag-blue); opacity: 0.75; }
+.opponents li.break {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: calc(var(--u) * 5);
+  padding: calc(var(--u) * 5);
+  background: var(--c-dark-red);
+  color: var(--c-flag-blue);
+  letter-spacing: calc(var(--u) * 1);
+}
+.opponents li.break::before, .opponents li.break::after { content: '\2744'; font-family: sans-serif; } /* snowflakes */
 .opponents .tag { padding: 0 calc(var(--u) * 2); box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-dark-navy); }
 .opponents .tag.home { background: var(--c-fire-red); color: var(--c-white); }
 .opponents .tag.away { background: var(--c-flag-blue); color: var(--c-navy); }
