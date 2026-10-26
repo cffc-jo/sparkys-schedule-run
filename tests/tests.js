@@ -10,7 +10,7 @@ import { createSparky } from '../js/game/sparky.js';
 import { SPARKY_SHEET } from '../config/sprites.js';
 import { seasonForDate, openingSeason, isOctober } from '../js/season.js';
 import { normalizeSchedule, scheduleWarnings } from '../js/schedule.js';
-import { formatMatchDate, formatMatchWhen, weekdayOf } from '../js/format.js';
+import { formatMatchDate, weekdayOf } from '../js/format.js';
 
 export const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -153,11 +153,10 @@ test('schedule: logo comes from code; extra fields kept; weekday filled in', () 
   eq(normalizeSchedule({ ...rawSchedule, isDemo: 'yes' }).isDemo, false); // only a real true counts
   eq(normalizeSchedule({ ...rawSchedule, midwinterBreakAfterMatch: 3 }).midwinterBreakAfterMatch, null); // after the last match: ignored
 });
-test('schedule: date + kickoff formatting, and a wrong weekday is flagged', () => {
+test('schedule: date formatting, and a wrong weekday is flagged', () => {
   eq(weekdayOf('2027-10-16'), 'Sat');
   eq(formatMatchDate('2027-10-16', 'Sat'), 'SAT, OCT 16');
   eq(formatMatchDate('TBD'), 'TBD');
-  eq(formatMatchWhen(normalizeSchedule(rawSchedule).matches[0]), 'SAT, OCT 16 · 7:30 PM CT');
   const w = scheduleWarnings(normalizeSchedule(rawSchedule));
   eq(w.length, 1, w.join('; '));
   ok(/match 3: 2028-03-08 is a Wed/.test(w[0]), w[0]);

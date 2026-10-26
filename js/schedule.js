@@ -8,7 +8,7 @@
 // Each match
 //   matchNumber, opponent, code, homeAway ("HOME" | "AWAY"), date ("YYYY-MM-DD" or text like "TBD")
 //   dayOfWeek   "Sat" (optional; worked out from the date if missing)
-//   kickoff     "7:30 PM CT" (optional; shown after the date)
+//   kickoff     "7:30 PM CT" (optional; kept with the match, not shown in the game)
 //   conference  "East" | "West" (optional)
 //   half        1 | 2 (optional; which half of the summer-to-spring season)
 //   logo        optional override; by default the logo is assets/logos/<code>.png

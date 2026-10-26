@@ -51,9 +51,9 @@ export const GAME = {
     typeMix: { ground: 0.60, floating: 0.25, tall: 0.15 }, // target obstacle mix
     noBackToBackHardUntil: 0.6, // fraction of the course where two hard boxes never appear in a row
     finishRunout: 220,          // px from the last box to the finish line
-    midwinterBreakSeconds: 2.4, // s of extra open pitch at the midwinter break (schedule.json
+    midwinterBreakSeconds: 1.6, // s of extra open pitch at the midwinter break (schedule.json
                                 // midwinterBreakAfterMatch), where the "MIDWINTER BREAK" banner shows
-    midwinterBannerDelay: 1.4,  // s after passing the last box before the break that the banner appears
+    midwinterBannerDelay: 1.0,  // s after passing the last box before the break that the banner appears
   },
 
   obstacles: {

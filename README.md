@@ -85,7 +85,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
    | `homeAway` | `HOME` or `AWAY`. Home boxes have a solid red frame; away boxes a dashed sky-blue frame. |
    | `date` | `YYYY-MM-DD` (shown as "SAT, OCT 16"), or any text such as `"TBD"` (shown as typed). The date also sets the **season** of the scenery after that box (see below). |
    | `dayOfWeek` | Optional, e.g. `"Sat"`. Worked out from the date if left out. If it doesn't match the date, the browser console warns. |
-   | `kickoff` | Optional, e.g. `"7:30 PM CT"`. Shown after the date on the reveal banner and in the end-screen list. |
+   | `kickoff` | Optional, e.g. `"7:30 PM CT"`. Kept with the match for future use (not shown in the game). |
    | `conference` | Optional, `"East"` or `"West"`. Kept with the match for future use. |
    | `half` | Optional, `1` or `2`: which half of the summer-to-spring season. Kept with the match for future use. |
 
@@ -100,7 +100,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
    If a logo is missing, the box shows the club code instead, so nothing breaks.
 
-3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:57.5 for 35 matches, including the midwinter break).
+3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:56.7 for 35 matches, including the midwinter break).
 
 4. **Commit and push.** Pages redeploys automatically.
 
@@ -257,7 +257,7 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | course | `typeMix` | 60/25/15 | Ground / floating / tall |
 | course | `noBackToBackHardUntil` | 0.6 | No two hard boxes in a row for this fraction of the run |
 | course | `finishRunout` | 220 | Ground from the last box to the goal |
-| course | `midwinterBreakSeconds`, `midwinterBannerDelay` | 2.4, 1.4 | Extra open pitch at the midwinter break; when its banner appears |
+| course | `midwinterBreakSeconds`, `midwinterBannerDelay` | 1.6, 1.0 | Extra open pitch at the midwinter break; when its banner appears |
 | obstacles | `boxSize`, `logoSize` | 30, 24 | Box and logo slot |
 | obstacles | `floatingBottom` | 20 | Gap under floating boxes (must be between duck and stand heights) |
 | obstacles | `tallCrateHeight` | 44 | Crate under tall boxes (forces a double jump) |
@@ -309,7 +309,7 @@ js/input/               input.js (touch/mouse/keyboard), gesture.js (classifier)
 js/course.js            deterministic course builder
 js/timer.js, speed.js   timer/penalty math, speed formula
 js/best.js, share.js    personal best, Web Share / copy fallback
-js/schedule.js, format.js  schedule.json schema (defaults, logo from code, warnings), date + kickoff formatting
+js/schedule.js, format.js  schedule.json schema (defaults, logo from code, warnings), date formatting
 js/leaderboard.js       stub (future)
 js/analytics.js         stub (future)
 js/debug.js             ?debug=1 tools

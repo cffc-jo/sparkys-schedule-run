@@ -1,12 +1,12 @@
 // The schedule-reveal banner: slides in at the top each time a box is cleared or hit.
 //   [logo] MATCH 12  [HOME]
 //          VS. NEW ENGLAND REVOLUTION
-//          SAT, OCT 16 · 7:30 PM CT      (date and kickoff split over two lines if too wide)
+//          SAT, OCT 16
 // It also shows short notices, e.g. the midwinter break.
 import { PALETTE as P } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { drawText, textWidth } from '../pixelText.js';
-import { matchWhen, isHome, displayName } from '../format.js';
+import { formatMatchDate, isHome, displayName } from '../format.js';
 
 const W = GAME.view.width;
 const PANEL = { x: 6, w: W - 12, h: 42, y: 60 }; // sits under the HUD and invincibility meter
@@ -43,15 +43,6 @@ function trimToFit(str, maxWidth) {
   return s;
 }
 
-// Date + kickoff: one line if it fits, otherwise date over kickoff
-export function whenLines(match, maxWidth = TEXT_W) {
-  const { date, kickoff } = matchWhen(match);
-  const one = [date, kickoff].filter(Boolean).join(' · ');
-  if (!one) return [];
-  if (textWidth(one) <= maxWidth || !date || !kickoff) return [trimToFit(one, maxWidth)];
-  return [trimToFit(date, maxWidth), trimToFit(kickoff, maxWidth)];
-}
-
 // 7x7 pixel snowflake
 const SNOWFLAKE = ['...K...', '.K.K.K.', '..KKK..', 'KKKKKKK', '..KKK..', '.K.K.K.', '...K...'];
 function drawSnowflake(ctx, x, y, color) {
@@ -65,7 +56,7 @@ function easeOutBack(t) {
 }
 
 export function createBanner() {
-  let cur = null; // match: { match, art, age, title, name[], when[] } | notice: { notice, age, title, sub }
+  let cur = null; // match: { match, art, age, title, name[], date } | notice: { notice, age, title, sub }
 
   return {
     show(match, art) {
@@ -77,7 +68,7 @@ export function createBanner() {
         home: isHome(match),
         title: `MATCH ${match.matchNumber}`,
         name: wrapName(name),
-        when: whenLines(match),
+        date: formatMatchDate(match.date, match.dayOfWeek),
       };
     },
 
@@ -108,7 +99,7 @@ export function createBanner() {
       }
       const x = PANEL.x;
       const y = Math.round(top + offset);
-      const h = cur.notice ? (cur.sub ? 34 : 22) : PANEL.h + (cur.name.length - 1 + Math.max(0, cur.when.length - 1)) * LINE_H;
+      const h = cur.notice ? (cur.sub ? 34 : 22) : PANEL.h + (cur.name.length - 1) * LINE_H;
       const flash = cur.age < 0.35 && Math.floor(cur.age * 12) % 2 === 0;
 
       ctx.fillStyle = P.DARK_NAVY;
@@ -147,7 +138,7 @@ export function createBanner() {
       drawText(ctx, tag, tx + 2, y + 5, { color: cur.home ? P.WHITE : P.NAVY });
 
       cur.name.forEach((line, i) => drawText(ctx, line, TEXT_X, y + 18 + i * LINE_H, { color: P.WHITE }));
-      cur.when.forEach((line, i) => drawText(ctx, line, TEXT_X, y + 18 + (cur.name.length + i) * LINE_H + 1, { color: P.FLAG_BLUE }));
+      if (cur.date) drawText(ctx, cur.date, TEXT_X, y + 18 + cur.name.length * LINE_H + 1, { color: P.FLAG_BLUE });
     },
   };
 }

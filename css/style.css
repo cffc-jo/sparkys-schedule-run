@@ -339,7 +339,6 @@ body {
 .opponents .who { display: grid; min-width: 0; }
 .opponents .who .name { overflow-wrap: anywhere; }
 .opponents .who .date { color: var(--c-flag-blue); }
-.opponents .who .kickoff { color: var(--c-flag-blue); opacity: 0.75; }
 .opponents li.break {
   display: flex;
   justify-content: center;

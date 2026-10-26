@@ -26,24 +26,10 @@ export function formatMatchDate(date, dayOfWeek) {
   return `${day}, ${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
-// Date and kickoff for a match: { date: "SAT, OCT 16", kickoff: "7:30 PM CT" }
-export function matchWhen(match) {
-  return {
-    date: formatMatchDate(match.date, match.dayOfWeek),
-    kickoff: match.kickoff ? String(match.kickoff).toUpperCase() : '',
-  };
-}
-
-// One line: "SAT, OCT 16 · 7:30 PM CT"
-export function formatMatchWhen(match) {
-  const w = matchWhen(match);
-  return [w.date, w.kickoff].filter(Boolean).join(' · ');
-}
-
 // Opponent name for display: upper case with accents removed ("CF Montréal" -> "CF MONTREAL"),
 // so it always renders cleanly in the pixel font. schedule.json keeps the official spelling.
 export function displayName(name) {
-  return String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+  return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 }
 
 export function isHome(match) {
