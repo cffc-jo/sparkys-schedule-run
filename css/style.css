@@ -399,6 +399,9 @@ body {
   text-shadow: calc(var(--u) * 1) calc(var(--u) * 1) 0 var(--c-dark-red);
 }
 .modal-close { position: absolute; top: calc(var(--u) * 6); right: calc(var(--u) * 6); }
+/* Schedule pop-up: fills the frame so the list gets the room */
+.schedule-panel { height: 100%; }
+.schedule-panel h2 { font-size: calc(var(--u) * 10); line-height: 1.5; }
 .modal-body {
   overflow-y: auto;
   touch-action: pan-y;

@@ -14,6 +14,7 @@ import { createBackground, BILLBOARD_LOGO } from './world/background.js';
 import { normalizeSchedule, scheduleWarnings } from './schedule.js';
 import { createUI } from './ui/ui.js';
 import { createModal } from './ui/modal.js';
+import { fillScheduleList } from './ui/scheduleList.js';
 import { audio } from './audio/audio.js';
 import { scheduleUrl, presaleUrl } from './links.js';
 import { track } from './analytics.js';
@@ -197,6 +198,18 @@ async function boot() {
   });
   app.modal = modal;
 
+  // Title screen VIEW SCHEDULE: the full schedule in a pop-up, without leaving the game
+  const scheduleEl = document.getElementById('schedule-modal');
+  const scheduleModal = createModal(scheduleEl);
+  const scheduleList = scheduleEl.querySelector('[data-schedule-list]');
+  scheduleEl.addEventListener('click', (e) => { if (e.target === scheduleEl) scheduleModal.close(); }); // tap outside
+  function openSchedule() {
+    if (!scheduleList.children.length) fillScheduleList(scheduleList, app);
+    scheduleList.scrollTop = 0;
+    scheduleModal.open();
+    track('schedule_open', { source: 'title' });
+  }
+
   app.ui = createUI(frame, {
     // First PLAY on this device shows the tutorial; after that, straight into the run.
     play: () => app.go(load(TUTORIAL_KEY, false) ? 'play' : 'tutorial'),
@@ -211,6 +224,9 @@ async function boot() {
     quit: () => app.go('title'),
     schedule: (el) => track('schedule_click', { source: el.dataset.source }), // link opens natively
     help: () => modal.open(),
+    'schedule-popup': () => openSchedule(),
+    'close-schedule': () => scheduleModal.close(),
+    'schedule-play': () => { scheduleModal.close(); app.go(load(TUTORIAL_KEY, false) ? 'play' : 'tutorial'); },
     'close-modal': () => modal.close(),
     mute: () => audio.toggleMute(),
     pause: () => app.scene && app.scene.togglePause && app.scene.togglePause(),

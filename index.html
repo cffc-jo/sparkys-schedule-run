@@ -59,7 +59,7 @@
           <div class="sponsor sponsor-title"><img src="assets/sponsors/carvana.svg" alt="Presented by Carvana" width="158" height="33"></div>
           <div class="title-buttons">
             <button class="btn btn-primary" data-action="play">PLAY</button>
-            <a class="btn btn-secondary" data-action="schedule" data-source="title">VIEW SCHEDULE</a>
+            <button class="btn btn-secondary" data-action="schedule-popup" aria-haspopup="dialog">VIEW SCHEDULE</button>
           </div>
         </section>
 
@@ -136,6 +136,21 @@
             </div>
           </div>
         </section>
+      </div>
+
+      <!-- Schedule pop-up (title screen VIEW SCHEDULE): the same list as the end screen, in-game -->
+      <div id="schedule-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title" hidden>
+        <div class="panel schedule-panel">
+          <button class="icon-btn modal-close" data-action="close-schedule" aria-label="Close schedule">
+            <svg viewBox="0 0 8 8" aria-hidden="true"><path d="M1 1h1v1h-1zM2 2h1v1h-1zM3 3h2v2h-2zM5 2h1v1h-1zM6 1h1v1h-1zM2 5h1v1h-1zM1 6h1v1h-1zM5 5h1v1h-1zM6 6h1v1h-1z"/></svg>
+          </button>
+          <h2 id="schedule-modal-title">YOUR <span data-bind-text="season"></span> SCHEDULE</h2>
+          <ol class="opponents scrollable" tabindex="0" aria-labelledby="schedule-modal-title" data-schedule-list></ol>
+          <div class="modal-buttons">
+            <button class="btn btn-secondary" data-action="close-schedule">CLOSE</button>
+            <button class="btn btn-primary" data-action="schedule-play">PLAY</button>
+          </div>
+        </div>
       </div>
 
       <!-- Instructions modal -->
