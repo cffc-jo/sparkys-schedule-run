@@ -44,7 +44,8 @@ body {
 #stage {
   position: fixed;
   inset: 0;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  /* One backdrop stripe (8px) above and below the game so it never touches the screen edges */
+  padding: calc(env(safe-area-inset-top) + 8px) env(safe-area-inset-right) calc(env(safe-area-inset-bottom) + 8px) env(safe-area-inset-left);
   display: grid;
   place-items: center;
 }
