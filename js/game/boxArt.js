@@ -25,9 +25,9 @@ export function abbrevLines(code) {
   return [c.slice(0, 3), c.slice(3, 6)];
 }
 
-export function logoBox(match, logoImg, size, logoSize, scale = RS) {
+export function logoBox(match, logoImg, size, logoSize, scale = RS, pad = GAME.obstacles.logoPadding ?? 1) {
   const home = String(match.homeAway).toUpperCase() === 'HOME';
-  const key = `${match.code}|${home}|${logoImg ? 1 : 0}|${size}|${scale}`;
+  const key = `${match.code}|${home}|${logoImg ? 1 : 0}|${size}|${scale}|${pad}`;
   if (cache.has(key)) return cache.get(key);
 
   const c = canvas(size * scale, size * scale);
@@ -60,7 +60,8 @@ export function logoBox(match, logoImg, size, logoSize, scale = RS) {
   x.fillStyle = P.WHITE;
   x.fillRect(inset, inset, logoSize, logoSize);
   if (logoImg) {
-    x.drawImage(logoImg, inset, inset, logoSize, logoSize);
+    // Inset by `pad` so there's always white between the logo and the frame (pixel-exact scaling)
+    x.drawImage(logoImg, inset + pad, inset + pad, logoSize - pad * 2, logoSize - pad * 2);
   } else {
     const lines = abbrevLines(match.code);
     const lh = 9;

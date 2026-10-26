@@ -59,6 +59,7 @@ export const GAME = {
   obstacles: {
     boxSize: 30,                // logo box outer size (px): 1px outline + 2px border + 24px logo
     logoSize: 24,               // logo slot inside the box (logical px). Logo files are this x renderScale
+    logoPadding: 1,             // white margin (logical px) between the logo and the slot edge, so logos never touch the frame
     floatingBottom: 20,         // gap under a floating box (px above ground). Must sit between the duck and stand hitbox heights.
                                 // Floating boxes hang from a cable, so jumping over them is impossible
     tallCrateHeight: 44,        // plain crate under a "tall" logo box (total 74px > single-jump apex ~67px)

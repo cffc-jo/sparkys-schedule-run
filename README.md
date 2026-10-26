@@ -258,7 +258,7 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | course | `noBackToBackHardUntil` | 0.6 | No two hard boxes in a row for this fraction of the run |
 | course | `finishRunout` | 220 | Ground from the last box to the goal |
 | course | `midwinterBreakSeconds`, `midwinterBannerDelay` | 1.6, 1.0 | Extra open pitch at the midwinter break; when its banner appears |
-| obstacles | `boxSize`, `logoSize` | 30, 24 | Box and logo slot |
+| obstacles | `boxSize`, `logoSize`, `logoPadding` | 30, 24, 1 | Box, logo slot, and the white margin around the logo inside it |
 | obstacles | `floatingBottom` | 20 | Gap under floating boxes (must be between duck and stand heights) |
 | obstacles | `tallCrateHeight` | 44 | Crate under tall boxes (forces a double jump) |
 | obstacles | `hitboxInset` | 3 | Forgiving collision |
