@@ -57,11 +57,19 @@ function easeOutBack(t) {
 
 export function createBanner() {
   let cur = null; // match: { match, art, age, title, name[], date } | notice: { notice, age, title, sub }
+  // Reveals that arrive while the current banner is still young wait here, so every banner stays
+  // up for at least bannerMinSeconds (matters when the power-up speeds Sparky through boxes).
+  let queue = [];
+  const minAge = () => GAME.ui.bannerMinSeconds ?? 0;
+  const present = (b) => {
+    if (cur && cur.age < minAge()) queue.push(b);
+    else cur = b;
+  };
 
   return {
     show(match, art) {
       const name = displayName(match.opponent || match.code);
-      cur = {
+      present({
         match,
         art,
         age: 0,
@@ -69,23 +77,23 @@ export function createBanner() {
         title: `MATCH ${match.matchNumber}`,
         name: wrapName(name, TEXT_W, matchupPrefix(match)),
         date: formatMatchDate(match.date, match.dayOfWeek),
-      };
+      });
     },
 
     // A short notice in the same slot, e.g. showNotice('MIDWINTER BREAK', 'BACK SAT, FEB 12')
     showNotice(title, sub = '', { snow = false } = {}) {
-      cur = { notice: true, age: 0, title, sub, snow };
+      present({ notice: true, age: 0, title, sub, snow });
     },
 
     get showing() { return cur; },
 
     update(dt) {
-      if (!cur) return;
-      cur.age += dt;
-      if (cur.age > GAME.ui.bannerSeconds) cur = null;
+      if (cur) cur.age += dt;
+      if (queue.length && (!cur || cur.age >= minAge())) cur = queue.shift();
+      else if (cur && cur.age > GAME.ui.bannerSeconds) cur = null;
     },
 
-    clear() { cur = null; },
+    clear() { cur = null; queue = []; },
 
     // `top` moves the banner (the tutorial shows it lower, under its card).
     render(ctx, { reducedMotion = false, top = PANEL.y } = {}) {

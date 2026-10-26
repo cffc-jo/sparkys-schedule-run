@@ -74,6 +74,8 @@ export function createPlayScene(app) {
   let countT = 0;
   let t = 0;
   let dist = 0;
+  let boost = 0;       // power-up speed boost level, 0..1 (see updateBoost)
+  let endGrace = 0;    // s left of smashing after invincibility ends
   let breaksShown = 0; // midwinter break banners already shown (course.breaks, in order)
   let speed = GAME.speed.baseSpeed;
   let cleared = 0;
@@ -125,6 +127,8 @@ export function createPlayScene(app) {
     particles.clear();
     banner.clear();
     breaksShown = 0;
+    boost = 0;
+    endGrace = 0;
     app.bg.clearSleigh();
     const opening = openingScenery(app.schedule.matches);
     app.bg.setSeason(opening.season, { instant: true, isOctober: opening.isOctober });
@@ -245,7 +249,9 @@ export function createPlayScene(app) {
       particles.burst(SX, GROUND - 1, { count: 6, colors: [sc.GRASS_TIP, sc.GRASS_A], speed: 50, up: 30, gravity: 300, life: 0.3, size: 1 });
     }
     const sb = sparky.hitbox(dist);
-    const invincible = invT > 0;
+    // Still smashing for a moment after invincibility ends (endGrace), so a box right in front at
+    // that instant breaks instead of costing a penalty
+    const invincible = invT > 0 || endGrace > 0;
 
     for (const b of boxes) {
       if (b.state !== 'pending') continue;
@@ -281,12 +287,24 @@ export function createPlayScene(app) {
     }
   }
 
+  // Power-up speed boost: `boost` (0..1) ramps in over boostRampSeconds, holds, then follows the
+  // last warningSeconds of invincibility down to 0, so it's fully off when invincibility ends.
+  function updateBoost(dt) {
+    const target = invT <= 0 ? 0 : Math.min(1, invT / (BALL.warningSeconds || 0.001));
+    boost = target > boost ? Math.min(target, boost + dt / (BALL.boostRampSeconds || 0.001)) : target;
+  }
+  function boostMultiplier() {
+    return 1 + ((BALL.speedBoost ?? 1) - 1) * boost;
+  }
+
   function updateEffects(dt, worldSpeed) {
     grace = Math.max(0, grace - dt);
     shake = Math.max(0, shake - dt);
     const wasWarning = invT > 0 && invT <= BALL.warningSeconds;
     const wasInvincible = invT > 0;
     invT = Math.max(0, invT - dt);
+    endGrace = Math.max(0, endGrace - dt);
+    if (wasInvincible && invT === 0) endGrace = BALL.endGraceSeconds ?? 0;
     if (!wasWarning && invT > 0 && invT <= BALL.warningSeconds) sfx('invincibleEnding');
     if (wasInvincible && invT === 0) app.audio.setTempo(1);
     for (const p of popups) { p.age += dt; p.y -= 30 * dt; }
@@ -306,7 +324,7 @@ export function createPlayScene(app) {
     get result() { return result; },
     // Read-only snapshot for debug tools and automated play-tests.
     get debugState() {
-      return { phase, paused, dist, speed, cleared, total, course, sparky, timer, boxes, balls: ballState, grace, invT };
+      return { phase, paused, dist, speed, cleared, total, course, sparky, timer, boxes, balls: ballState, grace, invT, boost, banner };
     },
     // Debug: jump to just before the finish line.
     skipToFinish() {
@@ -355,8 +373,9 @@ export function createPlayScene(app) {
           app.audio.music('game');
         }
       } else if (phase === 'run') {
-        worldSpeed = speed;
-        dist += speed * dt;
+        updateBoost(dt);
+        worldSpeed = speed * boostMultiplier();
+        dist += worldSpeed * dt;
         timer.tick(dt);
         step(dt);
         if (dist >= course.finishX) finish();

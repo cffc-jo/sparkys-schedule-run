@@ -56,7 +56,7 @@ export const SEASONS = Object.freeze({
     GRASS_TIP: '#B5E67A', GRASS_A: '#6CC04A', GRASS_B: '#5DB040', GRASS_DARK: '#4A9A33', GRASS_DEEP: '#3A7E28',
     SPECKS: ['#FFFFFF', '#F7B6D2', '#FFE27A'],   // little flowers in the grass
     WEATHER: { kind: 'petal', colors: ['#F7B6D2', '#FFFFFF'], rate: 4 },
-    DECOR: [],
+    DECOR: [['tulips', 0.45], ['daisies', 0.3]],  // flower beds along the pitch
   }),
   fall: Object.freeze({
     ...CITY,

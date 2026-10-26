@@ -100,7 +100,7 @@ The app's link can be a plain `<a href>` to the Pages URL. External links in the
 
    If a logo is missing, the box shows the club code instead, so nothing breaks.
 
-3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:56.7 for 35 matches, including the midwinter break).
+3. **Check the course.** A new schedule produces a new, but always identical, course layout. Open `tests/run.html` (all tests should pass) and play a run with `?debug=1` to confirm it feels right. Reaction gaps are enforced by the tests. A clean run should land around 45–60 s (currently about 0:51.7 for 35 matches, including the midwinter break and the power-up speed boosts).
 
 4. **Commit and push.** Pages redeploys automatically.
 
@@ -268,6 +268,8 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | penalties | `shakeSeconds`, `shakeMagnitude` | 0.25, 3 | Screen shake |
 | balls | `count` | 5 | Soccer balls on the course |
 | balls | `invincibilitySeconds` | 5 | Power-up length (resets, doesn't stack) |
+| balls | `speedBoost`, `boostRampSeconds` | 1.25, 0.3 | Run speed while powered up; ramps in, eases out over `warningSeconds` |
+| balls | `endGraceSeconds` | 0.25 | Boxes touched just after the power-up ends still smash (no penalty) |
 | balls | `warningSeconds` | 1 | End-of-power-up warning |
 | balls | `size`, `radius` | 20, 13 | Ball size and (generous) pickup range |
 | balls | `arcHeight`, `lowHeight`, `lowLead` | 80, 12, 42 | Ball placement |
@@ -275,6 +277,7 @@ Everything gameplay-related lives in **`config/game.js`** (commented line by lin
 | input | `swipeMinDistance` | 30 | CSS px for a swipe |
 | input | `swipeMaxTime` | 250 | ms for a swipe |
 | ui | `bannerSeconds` | 1.8 | Reveal banner time |
+| ui | `bannerMinSeconds` | 1.2 | Minimum time a banner stays up; a newer reveal waits its turn |
 | ui | `celebrateSeconds` | 1.8 | Finish celebration before the breakdown |
 | ui | `countdownStepSeconds` | 0.75 | 3-2-1 beat length |
 | ui | `buttonCooldownMs` | 350 | Ignore double-taps on buttons |
@@ -352,7 +355,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] Hitting a box adds **exactly +10.0 s**, with a "+10" pop, shake, stumble, buzz on Android, and about 1 s of flicker with no second penalty.
 - [ ] Every box, cleared or hit, shows the reveal banner with logo, match number, HOME/AWAY, opponent and date. Long names wrap.
 - [ ] Clearing boxes gradually speeds the run up.
-- [ ] The scenery changes season as boxes pass, following each match date: winter (snowy pitch, heavy snowfall, snowmen) → spring (flowers, petals) → summer → fall (olive-gold grass, falling leaves, leaf piles, plus jack-o'-lanterns after October matches). Sky and pitch colours crossfade over about 2 s. Props (snowmen, leaf piles, jack-o'-lanterns) never fade: they stay fully opaque, and after a change new ones simply stop or start arriving as the timeline moves on. With reduced motion there's no weather and changes are instant.
+- [ ] The scenery changes season as boxes pass, following each match date: winter (snowy pitch, heavy snowfall, snowmen) → spring (tulips and daisy bushes, petals) → summer → fall (olive-gold grass, falling leaves, leaf piles, plus jack-o'-lanterns after October matches). Sky and pitch colours crossfade over about 2 s. Props (snowmen, flowers, leaf piles, jack-o'-lanterns) never fade: they stay fully opaque, and after a change new ones simply stop or start arriving as the timeline moves on. With reduced motion there's no weather and changes are instant.
 - [ ] Soccer balls: collecting one gives a glow, a draining meter, faster music and 5 s of invincibility. Boxes shatter with no penalty and still reveal. Collecting another resets the meter to 5 s. The meter blinks in the last second.
 - [ ] All 5 balls can be collected in a clean run without hitting anything.
 - [ ] A clean run finishes in about 45–60 s. The current course is about 0:54.

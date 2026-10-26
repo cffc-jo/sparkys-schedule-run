@@ -79,6 +79,10 @@ export const GAME = {
     count: 5,                   // soccer balls placed on the course
     invincibilitySeconds: 5,    // duration of invincibility per ball (collecting again resets)
     warningSeconds: 1,          // final seconds of invincibility that flicker as a warning
+    speedBoost: 1.25,           // run speed multiplier while invincible. Ramps in over boostRampSeconds and
+    boostRampSeconds: 0.3,      // eases back to normal over warningSeconds, so the course's reaction gaps
+                                // hold again the moment invincibility ends
+    endGraceSeconds: 0.25,      // after invincibility ends, boxes touched in this window still smash (no penalty)
     size: 20,                   // ball sprite size (px)
     arcHeight: 80,              // ball centre height when floating over a ground box (top of a jump)
     lowHeight: 12,              // ball centre height when placed just before a floating box
@@ -95,6 +99,7 @@ export const GAME = {
 
   ui: {
     bannerSeconds: 1.8,         // how long the "MATCH 12 · vs. NYCFC" reveal banner stays up
+    bannerMinSeconds: 1.2,      // a banner stays up at least this long; a newer reveal waits its turn
     celebrateSeconds: 1.8,      // victory animation at the finish before the time breakdown
     countdownStepSeconds: 0.75, // length of each 3-2-1 beat
     buttonCooldownMs: 350,      // ignore repeat taps on the same button within this window

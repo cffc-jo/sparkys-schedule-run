@@ -1,5 +1,5 @@
 // Seasonal pitch-side props (background scenery, not brand art): snowmen in winter,
-// leaf piles in fall, jack-o'-lanterns in October.
+// tulips and daisy bushes in spring, leaf piles in fall, jack-o'-lanterns in October.
 import { gridToCanvas, PIXEL_COLORS } from './pixelArt.js';
 import { PALETTE as P } from '../../config/palette.js';
 
@@ -15,7 +15,11 @@ const C = {
   p: '#B85A14',    // pumpkin shading
   Y: '#FFD23F',    // candle glow / yellow leaves
   r: '#C0392B',    // red leaves
-  G: '#4E8A2E',    // pumpkin stem
+  G: '#4E8A2E',    // pumpkin stem / leaves
+  g: '#76B947',    // light leaf green
+  P: '#F27DAA',    // pink tulip
+  q: '#C94F82',    // tulip shading
+  y: '#E6A21C',    // daisy centre / yellow tulip shading
 };
 
 const SNOWMAN = [
@@ -69,6 +73,34 @@ const PUMPKIN = [
   '...KKKKKKKKKK...',
 ];
 
+const TULIPS = [
+  '.K.K.K...........K.K.K.',
+  '.KRKRK....K.K.K..KYKYK.',
+  'KRRRRRK..KPKPKPK.KYYYyK',
+  'KRRRRDK..KPPPPqK.KYYYyK',
+  'KRRRRDK..KPPPPqK.KYYYyK',
+  '.KRRDK....KPPqK...KYyK.',
+  '..KGK......KGK.....KGK.',
+  '.KgGK.KK...KGK..KK.KGK.',
+  'KggGKKgGK.KgGK.KgGKKGgK',
+  'KgGGKgGK..KgGKKgGK.KGgK',
+  '.KGGGGK...KGGGGK...KGK.',
+  'KKKKKKKKKKKKKKKKKKKKKKK',
+];
+
+const DAISIES = [
+  '.....KKK....KKK.....',
+  '....KWWWK..KWWWK....',
+  '..KKWWyWWKKWWyWWK...',
+  '.KgGKWWWKgGKWWWKKK..',
+  'KgGgGKKKgGgGKKKWWWK.',
+  'KGgKWWWKGgGgGKWWyWWK',
+  'KgKWWyWWKGgGgGKWWWKK',
+  'KGgKWWWKgGgGgGgKKKgK',
+  'KgGgKKKgGgGgGgGgGgGK',
+  'KKKKKKKKKKKKKKKKKKKK',
+];
+
 let cache = null;
 
 export function decorSprites() {
@@ -77,6 +109,8 @@ export function decorSprites() {
     snowman: gridToCanvas(SNOWMAN, C),
     leafPile: gridToCanvas(LEAF_PILE, C),
     pumpkin: gridToCanvas(PUMPKIN, C),
+    tulips: gridToCanvas(TULIPS, C),
+    daisies: gridToCanvas(DAISIES, C),
   };
   return cache;
 }
