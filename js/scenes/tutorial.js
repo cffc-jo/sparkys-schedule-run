@@ -104,7 +104,11 @@ export function createTutorialScene(app) {
     $('step').textContent = `${i + 1} / ${list.length}`;
     $('title').textContent = step.title;
     $('text').innerHTML = step.text;
-    $('next').textContent = i === list.length - 1 ? "LET'S GO!" : 'NEXT';
+    const last = i === list.length - 1;
+    $('next').textContent = last ? "LET'S GO!" : 'NEXT';
+    // Last card: no SKIP, LET'S GO! takes the full width
+    $('skip').hidden = last;
+    $('buttons').classList.toggle('single', last);
     $('dots').innerHTML = list.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('');
     // Restart the demo for this step
     sparky.reset();

@@ -528,5 +528,7 @@ body {
 .tut-dots span.on { background: var(--c-white); }
 .tut-buttons { display: grid; grid-template-columns: 1fr 1.6fr; gap: calc(var(--u) * 8); }
 .tut-buttons .btn { font-size: calc(var(--u) * 10); }
+.tut-buttons.single { grid-template-columns: 1fr; }
+.tut-buttons .btn[hidden] { display: none; }
 .modal-buttons { display: grid; grid-template-columns: 1fr 1.4fr; gap: calc(var(--u) * 8); }
 .modal-buttons .btn-secondary { font-size: calc(var(--u) * 8); }
