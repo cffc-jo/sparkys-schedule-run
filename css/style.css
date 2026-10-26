@@ -357,8 +357,7 @@ body {
 .opponents .tag.away { background: var(--c-flag-blue); color: var(--c-navy); }
 
 .end-buttons { display: grid; gap: calc(var(--u) * 7); }
-.end-buttons > .btn-secondary { font-size: calc(var(--u) * 9); }
-.end-panel .btn-primary { font-size: calc(var(--u) * 12); }
+.end-buttons .btn { font-size: calc(var(--u) * 9); } /* PRESALE ACCESS and PLAY AGAIN match */
 
 @media (prefers-reduced-motion: reduce) {
   .new-best { animation: none; }

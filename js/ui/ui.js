@@ -24,11 +24,12 @@ export function createUI(frame, actions) {
   const muteBtns = [...frame.querySelectorAll('[data-action="mute"]')];
 
   return {
-    // Show one screen; optionally move keyboard focus to its first button.
+    // Show one screen; optionally move keyboard focus to its [data-autofocus] control, else its first button.
     showScreen(name, { focus = false } = {}) {
       for (const s of screens) s.hidden = s.dataset.screen !== name;
       if (focus) {
-        const first = frame.querySelector(`[data-screen="${name}"] button, [data-screen="${name}"] a`);
+        const scr = `[data-screen="${name}"]`;
+        const first = frame.querySelector(`${scr} [data-autofocus]`) || frame.querySelector(`${scr} button, ${scr} a`);
         if (first) first.focus();
       } else if (document.activeElement && document.activeElement.closest('[hidden]')) {
         document.activeElement.blur();
