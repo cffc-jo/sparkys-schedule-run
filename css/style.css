@@ -417,10 +417,12 @@ body {
   color: var(--c-flag-blue);
 }
 .modal-body h3:first-child { margin-top: 0; }
-.modal-body h4 { margin: calc(var(--u) * 6) 0 calc(var(--u) * 2); font-size: calc(var(--u) * 7); font-weight: normal; color: var(--c-white); text-decoration: underline; text-underline-offset: calc(var(--u) * 2); }
 .modal-body p { margin: 0; }
 .modal-body b { font-weight: normal; color: var(--c-flag-blue); }
 .modal-body ul { margin: 0; padding: 0; list-style: none; }
+/* How to Play shows phone controls on touch devices and keyboard controls on desktop */
+@media (pointer: coarse) { .modal-body .controls-keyboard { display: none; } }
+@media not all and (pointer: coarse) { .modal-body .controls-touch { display: none; } }
 .modal-body .controls li { padding-left: calc(var(--u) * 8); position: relative; margin-bottom: calc(var(--u) * 2); }
 .modal-body .controls li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: calc(var(--u) * 3); height: calc(var(--u) * 3); background: var(--c-white); }
 .modal-body kbd {
