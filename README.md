@@ -53,7 +53,7 @@ The repo root **is** the site. All paths are relative, so it works under `https:
 
 If the game moves to a different address (another repo or a custom domain), update the **absolute** share-preview URLs in `index.html` (`og:url`, `og:image`, `twitter:image`). Social networks can't read relative paths. Everything else is relative and moves as-is.
 
-The app's link can be a plain `<a href>` to the Pages URL. External links in the game (**View schedule**) use `target="_blank"`, which in-app webviews hand off to the browser.
+The app's link can be a plain `<a href>` to the Pages URL. External links in the game (**View schedule**, **Presale access**) open in the same window, replacing the game.
 
 ## Swapping in the 2027-28 schedule and logos
 
@@ -334,7 +334,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 
 **Title screen**
 - [ ] Sparky idles and blinks, and the LED boards scroll. The title loop plays after the first tap.
-- [ ] **View schedule** opens chicagofirefc.com/schedule with the `utm_*` tags, in a new tab or the system browser (including from the in-app webview).
+- [ ] **View schedule** opens chicagofirefc.com/schedule with the `utm_*` tags, in the same window (including inside the in-app webview).
 - [ ] **?** opens How to Play: it scrolls, Esc closes it, Tab stays inside it, and focus returns to **?**.
 - [ ] Mute toggles music and sound effects. It's remembered after a reload and shows on every screen.
 
@@ -371,7 +371,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] **Continue** opens the end screen with the final time, breakdown and personal best.
 - [ ] Beating your best flashes **NEW BEST!**. A slower run keeps the old best.
 - [ ] The "Your 2027-28 schedule" list scrolls and shows all matches in order with logo, HOME/AWAY and date.
-- [ ] **Presale access**: opens the presale page (currently the placeholder https://www.chicagofirefc.com/ with UTM tags) in a new tab / the browser.
+- [ ] **Presale access**: opens the presale page (currently the placeholder https://www.chicagofirefc.com/ with UTM tags) in the same window.
 - [ ] **Play again** starts a fresh run with the same course layout.
 
 **Edge cases**
