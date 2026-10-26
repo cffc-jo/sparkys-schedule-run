@@ -4,7 +4,7 @@ An 8-bit browser game for the **Chicago Fire FC 2027-28 schedule release**. Spar
 
 - **Live:** https://cffc-jo.github.io/sparkys-schedule-run/
 - **Stack:** plain HTML, CSS and JavaScript (ES modules) on a `<canvas>`. No framework, no build step, no runtime dependencies, no backend.
-- **Size:** about 550 KB in total, with everything preloaded behind an 8-bit loading bar. It works offline once loaded.
+- **Size:** about 315 KB of files (roughly 150 KB to download, since GitHub Pages compresses the code), with everything preloaded behind an 8-bit loading bar. It works offline once loaded.
 - **Targets:** mobile-first portrait, iOS Safari, Android Chrome, in-app webviews (iOS WKWebView, Android WebView) and desktop.
 
 > **Before launch: brand/legal review.** The opponent logos in `assets/logos/` are **stylised 8-bit renderings of other clubs' marks**, and `config/schedule.json` currently holds a **fictional demo 2027-28 schedule** (`"isDemo": true`, which shows a "DEMO SCHEDULE" tag on the title and end screens). Get the logo usage approved and swap in the real 2027-28 schedule with `"isDemo": false` (see [Swapping in the 2027-28 schedule](#swapping-in-the-2027-28-schedule-and-logos)). The presenting partner, **Carvana**, appears on the start screen, the end screen and a skyline billboard, using their official logo (`assets/sponsors/carvana.svg`, unaltered, on white, logo only); confirm those placements with the partner too.
