@@ -1,12 +1,12 @@
 // The schedule-reveal banner: slides in at the top each time a box is cleared or hit.
 //   [logo] MATCH 12  [HOME]
-//          VS. NEW ENGLAND REVOLUTION
+//          VS. NEW ENGLAND REVOLUTION    ("AT" for away matches)
 //          SAT, OCT 16
 // It also shows short notices, e.g. the midwinter break.
 import { PALETTE as P } from '../../config/palette.js';
 import { GAME } from '../../config/game.js';
 import { drawText, textWidth } from '../pixelText.js';
-import { formatMatchDate, isHome, displayName } from '../format.js';
+import { formatMatchDate, isHome, displayName, matchupPrefix } from '../format.js';
 
 const W = GAME.view.width;
 const PANEL = { x: 6, w: W - 12, h: 42, y: 60 }; // sits under the HUD and invincibility meter
@@ -17,11 +17,11 @@ const SLIDE_OUT = 0.2;
 
 const LINE_H = 11;
 
-// "VS. <OPPONENT>" on one line if it fits, otherwise split over two lines at the most balanced
-// word break (e.g. "VS. NEW YORK / RED BULLS", never an orphaned "FC"). Letter spacing is never
+// "VS. <OPPONENT>" (or "AT <OPPONENT>") on one line if it fits, otherwise split over two lines at
+// the most balanced word break (e.g. "VS. NEW YORK / RED BULLS", never an orphaned "FC"). Letter spacing is never
 // squeezed below 1px, so characters never touch.
-export function wrapName(name, maxWidth = TEXT_W) {
-  const words = ['VS.', ...String(name).toUpperCase().split(/\s+/).filter(Boolean)];
+export function wrapName(name, maxWidth = TEXT_W, prefix = 'VS.') {
+  const words = [prefix, ...String(name).toUpperCase().split(/\s+/).filter(Boolean)];
   const one = words.join(' ');
   if (textWidth(one) <= maxWidth || words.length < 2) return [trimToFit(one, maxWidth)];
   let best = null;
@@ -67,7 +67,7 @@ export function createBanner() {
         age: 0,
         home: isHome(match),
         title: `MATCH ${match.matchNumber}`,
-        name: wrapName(name),
+        name: wrapName(name, TEXT_W, matchupPrefix(match)),
         date: formatMatchDate(match.date, match.dayOfWeek),
       };
     },

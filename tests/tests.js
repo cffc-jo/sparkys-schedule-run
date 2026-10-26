@@ -10,7 +10,7 @@ import { createSparky } from '../js/game/sparky.js';
 import { SPARKY_SHEET } from '../config/sprites.js';
 import { seasonForDate, openingSeason, isOctober } from '../js/season.js';
 import { normalizeSchedule, scheduleWarnings } from '../js/schedule.js';
-import { formatMatchDate, weekdayOf } from '../js/format.js';
+import { formatMatchDate, weekdayOf, matchupPrefix } from '../js/format.js';
 
 export const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -157,6 +157,8 @@ test('schedule: date formatting, and a wrong weekday is flagged', () => {
   eq(weekdayOf('2027-10-16'), 'Sat');
   eq(formatMatchDate('2027-10-16', 'Sat'), 'SAT, OCT 16');
   eq(formatMatchDate('TBD'), 'TBD');
+  eq(matchupPrefix({ homeAway: 'HOME' }), 'VS.');
+  eq(matchupPrefix({ homeAway: 'AWAY' }), 'AT');
   const w = scheduleWarnings(normalizeSchedule(rawSchedule));
   eq(w.length, 1, w.join('; '));
   ok(/match 3: 2028-03-08 is a Wed/.test(w[0]), w[0]);

@@ -2,7 +2,7 @@
 // play again / view schedule / share. The panel is DOM (scrollable, accessible); the canvas
 // behind it keeps the stadium backdrop.
 import { formatTime } from '../timer.js';
-import { formatMatchDate, isHome, displayName } from '../format.js';
+import { formatMatchDate, isHome, displayName, matchupPrefix } from '../format.js';
 import { abbrevLines } from '../game/boxArt.js';
 
 export function createEndScene(app) {
@@ -36,7 +36,7 @@ export function createEndScene(app) {
       who.className = 'who';
       const name = document.createElement('span');
       name.className = 'name';
-      name.textContent = `VS. ${displayName(m.opponent)}`;
+      name.textContent = `${matchupPrefix(m)} ${displayName(m.opponent)}`;
       const when = formatMatchDate(m.date, m.dayOfWeek);
       const date = document.createElement('span');
       date.className = 'date';
@@ -46,7 +46,7 @@ export function createEndScene(app) {
       tag.className = `tag ${home ? 'home' : 'away'}`;
       tag.textContent = home ? 'HOME' : 'AWAY';
       li.append(num, logo, who, tag);
-      li.setAttribute('aria-label', `Match ${m.matchNumber}: ${home ? 'home' : 'away'} versus ${m.opponent}${when ? ', ' + when : ''}`);
+      li.setAttribute('aria-label', `Match ${m.matchNumber}: ${home ? 'home versus' : 'away at'} ${m.opponent}${when ? ', ' + when : ''}`);
       list.append(li);
       if (m.matchNumber === app.schedule.midwinterBreakAfterMatch) {
         const brk = document.createElement('li');

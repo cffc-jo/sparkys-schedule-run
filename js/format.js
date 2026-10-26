@@ -35,3 +35,8 @@ export function displayName(name) {
 export function isHome(match) {
   return String(match.homeAway).toUpperCase() === 'HOME';
 }
+
+// "VS." for home matches, "AT" for away matches
+export function matchupPrefix(match) {
+  return isHome(match) ? 'VS.' : 'AT';
+}
