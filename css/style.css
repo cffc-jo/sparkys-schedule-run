@@ -523,3 +523,4 @@ body {
 .tut-buttons .btn[hidden] { display: none; }
 .modal-buttons { display: grid; grid-template-columns: 1fr 1.4fr; gap: calc(var(--u) * 8); }
 .modal-buttons .btn-secondary { font-size: calc(var(--u) * 8); }
+.modal-buttons .btn-primary { font-size: calc(var(--u) * 11); white-space: nowrap; padding-left: calc(var(--u) * 6); padding-right: calc(var(--u) * 6); } /* GOT IT! on one line */
