@@ -1,5 +1,5 @@
 // End screen: thanks, final time + breakdown (and a NEW BEST! flash), the full opponents list,
-// play again / view schedule / share. The panel is DOM (scrollable, accessible); the canvas
+// play again / view schedule / presale access. The panel is DOM (scrollable, accessible); the canvas
 // behind it keeps the stadium backdrop.
 import { formatTime } from '../timer.js';
 import { formatMatchDate, isHome, displayName, matchupPrefix } from '../format.js';

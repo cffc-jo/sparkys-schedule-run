@@ -15,7 +15,7 @@ import { normalizeSchedule, scheduleWarnings } from './schedule.js';
 import { createUI } from './ui/ui.js';
 import { createModal } from './ui/modal.js';
 import { audio } from './audio/audio.js';
-import { scheduleUrl } from './links.js';
+import { scheduleUrl, presaleUrl } from './links.js';
 import { track } from './analytics.js';
 import { isDebug } from './debugFlag.js';
 import { createDebugTools } from './debug.js';
@@ -25,7 +25,6 @@ import { createEndScene } from './scenes/end.js';
 import { createTutorialScene, TUTORIAL_KEY } from './scenes/tutorial.js';
 import { load } from './storage.js';
 import { isEnabled as leaderboardEnabled } from './leaderboard.js';
-import { shareResult } from './share.js';
 
 // ---- Palette → CSS custom properties (single source of truth) ----
 for (const [name, hex] of Object.entries(P)) {
@@ -136,15 +135,6 @@ function afterFinish() {
   app.go('end');
 }
 
-let toastTimer = 0;
-function toast(message) {
-  const el = frame.querySelector('[data-toast]');
-  if (!el) return;
-  el.textContent = message;
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.hidden = true; }, 2200);
-}
 
 // Draw an image (e.g. an SVG logo) smoothly into a canvas at renderScale, so it stays crisp when
 // drawn at logical size w x h on the game canvas (which otherwise renders pixel-sharp).
@@ -197,6 +187,7 @@ async function boot() {
   });
   frame.querySelectorAll('img[data-icon]').forEach((img) => { img.src = iconDataURL(img.dataset.icon); });
   frame.querySelectorAll('[data-action="schedule"]').forEach((a) => { a.href = scheduleUrl(); });
+  frame.querySelectorAll('[data-action="presale"]').forEach((a) => { a.href = presaleUrl(); });
 
   const modal = createModal(document.getElementById('modal'), {
     onChange: (open) => {
@@ -214,12 +205,7 @@ async function boot() {
     'replay-tutorial': () => { modal.close(); app.go('tutorial'); },
     continue: () => afterFinish(),
     'play-again': () => { track('play_again'); app.go('play'); },
-    share: async () => {
-      track('share_click', { finalTimeMs: app.lastResult && app.lastResult.finalTimeMs });
-      const outcome = await shareResult(app.lastResult ? app.lastResult.finalTimeMs : 0);
-      if (outcome === 'copied') toast('LINK COPIED!');
-      else if (outcome === 'manual') toast('COPY THE PAGE LINK TO SHARE');
-    },
+    presale: () => track('presale_click', { finalTimeMs: app.lastResult && app.lastResult.finalTimeMs }), // link opens natively
     resume: () => app.scene.resume && app.scene.resume(),
     restart: () => app.go('play'),
     quit: () => app.go('title'),

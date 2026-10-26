@@ -360,20 +360,6 @@ body {
 .end-row .btn { font-size: calc(var(--u) * 7); padding-left: calc(var(--u) * 3); padding-right: calc(var(--u) * 3); }
 .end-panel .btn-primary { font-size: calc(var(--u) * 12); }
 
-.toast {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--u) * 92);
-  transform: translateX(-50%);
-  margin: 0;
-  padding: calc(var(--u) * 4) calc(var(--u) * 6);
-  font-size: calc(var(--u) * 7);
-  white-space: nowrap;
-  background: var(--c-dark-navy);
-  color: var(--c-white);
-  box-shadow: 0 0 0 calc(var(--u) * 1) var(--c-white);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .new-best { animation: none; }
 }

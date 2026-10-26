@@ -192,12 +192,12 @@ Planned design, for context:
 | `game_start` | A run starts | `{ matches }` |
 | `game_complete` | Sparky crosses the finish | `{ finalTimeMs, rawTimeMs, penalties }` |
 | `schedule_click` | **View schedule** tapped | `{ source: 'title' \| 'end' }` |
-| `share_click` | **Share** tapped | `{ finalTimeMs }` |
+| `presale_click` | **Presale access** tapped (end screen) | `{ finalTimeMs }` |
 | `play_again` | **Play again** on the end screen | — |
 | `tutorial_complete` | **Let's go!** on the last tutorial card | `{ step }` |
 | `tutorial_skip` | **Skip** or Esc during the tutorial | `{ step }` (the card they left on) |
 
-Outbound schedule link and UTM tags: `config/links.js`. Share text, with a slot for a future hashtag: `config/links.js` → `SHARE`.
+Outbound links (schedule, presale access) and UTM tags: `config/links.js`.
 
 ## Debug mode and tests
 
@@ -292,7 +292,7 @@ Other config files:
 | `config/schedule.json` | Season and matches |
 | `config/palette.js` | Official club colours (`PALETTE`) and approved background-only scenery colours per season (`SEASONS`: winter, spring, summer, fall, including weather) |
 | `config/sprites.js` | Sparky frame map and hitboxes |
-| `config/links.js` | Schedule URL, UTM tags, game URL, share text |
+| `config/links.js` | Schedule URL, presale URL (placeholder: chicagofirefc.com), UTM tags |
 
 ## Project structure
 
@@ -311,7 +311,7 @@ js/audio/               synth.js (sound effects), music.js (chiptune + sequencer
 js/input/               input.js (touch/mouse/keyboard), gesture.js (classifier)
 js/course.js            deterministic course builder
 js/timer.js, speed.js   timer/penalty math, speed formula
-js/best.js, share.js    personal best, Web Share / copy fallback
+js/best.js              personal best (drives the NEW BEST! flash)
 js/schedule.js, format.js  schedule.json schema (defaults, logo from code, warnings), date formatting
 js/leaderboard.js       stub (future)
 js/analytics.js         stub (future)
@@ -371,7 +371,7 @@ Run through this on **iOS Safari**, **Android Chrome**, the **Chicago Fire app's
 - [ ] **Continue** opens the end screen with the final time, breakdown and personal best.
 - [ ] Beating your best flashes **NEW BEST!**. A slower run keeps the old best.
 - [ ] The "Your 2027-28 schedule" list scrolls and shows all matches in order with logo, HOME/AWAY and date.
-- [ ] **Share**: the phone's share sheet opens with "I ran Sparky's Schedule Run in M:SS.t — can you beat me?" and the link. On desktop or webviews without sharing, "LINK COPIED!" appears and the clipboard holds the text and link.
+- [ ] **Presale access**: opens the presale page (currently the placeholder https://www.chicagofirefc.com/ with UTM tags) in a new tab / the browser.
 - [ ] **Play again** starts a fresh run with the same course layout.
 
 **Edge cases**
